@@ -3,21 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TELYX | Generador</title>
+  <title>TELYX | Generador de Enlaces</title>
   <style>
     *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
     body{background:#0a0a0a;color:#fff;max-width:600px;margin:40px auto;padding:20px}
-    h1{text-align:center;color:#01b4e4;margin-bottom:30px}
+    h1{text-align:center;color:#4499ff;margin-bottom:30px}
     .grupo{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px}
     input,select{padding:12px;border:2px solid #222;border-radius:6px;background:#151515;color:#fff;font-size:16px}
-    button{padding:12px 18px;border:none;border-radius:6px;background:#01b4e4;color:#000;font-weight:bold;cursor:pointer}
+    button{padding:12px 18px;border:none;border-radius:6px;background:#4499ff;color:#000;font-weight:bold;cursor:pointer}
     #resultado{margin-top:25px;padding:15px;background:#151515;border-radius:8px;display:none}
-    .enlace{color:#01b4e4;word-break:break-all;font-weight:bold;margin:10px 0;display:block}
+    .enlace{color:#4499ff;word-break:break-all;font-weight:bold;margin:10px 0;display:block}
     .ok{color:#2ecc71;display:none}
   </style>
 </head>
 <body>
-  <h1>🔗 TELYX | Mi Generador</h1>
+  <h1>🔗 TELYX | Generador</h1>
   <div class="grupo">
     <select id="tipo">
       <option value="movie">Película</option>
@@ -28,11 +28,22 @@
     <input type="number" id="epi" placeholder="Ep" style="width:70px;display:none">
     <button onclick="generar()">Generar Enlace</button>
   </div>
+
+  <!-- OPCIÓN 2: Pones TU enlace y te damos el corto -->
+  <div style="margin-top:30px;padding:15px;border:1px solid #222;border-radius:8px">
+    <h3>🎥 Tienes el enlace del video?</h3>
+    <input type="text" id="enlaceVideo" placeholder="Pega aquí tu .mp4 / .m3u8" style="width:100%;margin:10px 0">
+    <button onclick="crearEnlaceCorto()">Crear enlace propio</button>
+    <div id="corto" style="margin-top:10px;display:none">
+      <p>Tu enlace: <span id="miCorto" style="color:#4499ff;font-weight:bold"></span></p>
+    </div>
+  </div>
+
   <div id="resultado">
     <p>Tu enlace listo:</p>
     <a id="link" class="enlace" target="_blank"></a>
     <button onclick="copiar()">Copiar</button>
-    <p id="msg" class="ok">✅ Copiado al portapapeles</p>
+    <p id="msg" class="ok">✅ Copiado</p>
   </div>
 
 <script>
@@ -42,6 +53,8 @@ document.getElementById("tipo").onchange=()=>{
   document.getElementById("temp").style.display=esTV?"inline-block":"none";
   document.getElementById("epi").style.display=esTV?"inline-block":"none";
 };
+
+// 🎯 Opción 1: Pones ID → genera tu enlace
 function generar(){
   const id=document.getElementById("id").value.trim();
   const tipo=document.getElementById("tipo").value;
@@ -49,12 +62,23 @@ function generar(){
   const e=document.getElementById("epi").value||1;
   if(!id)return alert("Ingresa ID válido");
   let url=tipo==="movie"
-    ? `${DOMINIO}/play/movie.html?id=${id}`
-    : `${DOMINIO}/play/tv.html?id=${id}&t=${t}&e=${e}`;
+    ? `${DOMINIO}/play/movie/${id}`
+    : `${DOMINIO}/play/tv/${id}/${t}/${e}`;
   document.getElementById("link").href=url;
   document.getElementById("link").textContent=url;
   document.getElementById("resultado").style.display="block";
 }
+
+// 🎯 Opción 2: Pones tu enlace → te damos el enlace corto
+function crearEnlaceCorto(){
+  const enlace=document.getElementById("enlaceVideo").value.trim();
+  if(!enlace)return alert("Pega tu enlace primero");
+  const idUnico = btoa(enlace).slice(0,12); // crea código único
+  const url = `${DOMINIO}/v/${idUnico}`;
+  document.getElementById("miCorto").textContent=url;
+  document.getElementById("corto").style.display="block";
+}
+
 function copiar(){
   navigator.clipboard.writeText(document.getElementById("link").textContent);
   document.getElementById("msg").style.display="block";
