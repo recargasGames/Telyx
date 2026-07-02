@@ -47,7 +47,7 @@
 </head>
 <body>
 
-    <h1 id="titulo">Cargando información...</h1>
+    <h1 id="titulo">Cargando...</h1>
     <p class="subtitulo">Disfruta del mejor contenido en español latino.</p>
 
     <div class="reproductor">
@@ -63,51 +63,45 @@
     </div>
 
     <h3>Sinopsis</h3>
-    <p id="sinopsis">Obteniendo datos de TMDb...</p>
+    <p id="sinopsis">Obteniendo información...</p>
 
     <input type="text" id="fuente" class="entrada" placeholder="Pega aquí tu enlace .mp4 / .m3u8 (opcional)">
 
 <script>
+// 🔑 Clave válida
 const API_KEY = "86694f7126511f241254f76f60820528";
 
-// ✅ LECTURA 100% SEGURA DEL ID
-let idTmdb = "";
-const partesRuta = window.location.pathname.split("/");
-// Busca el número después de /movie/
-for (let i = 0; i < partesRuta.length; i++) {
-    if (partesRuta[i] === "movie" && partesRuta[i+1]) {
-        idTmdb = partesRuta[i+1].trim();
-        break;
-    }
-}
+// ✅ LECTURA MEJORADA DEL ID
+const ruta = window.location.pathname;
+const coincidencia = ruta.match(/\/play\/movie\/(\d+)/i);
+const idTmdb = coincidencia ? coincidencia[1] : "";
 
 async function cargarInfo() {
-    if (!idTmdb || isNaN(idTmdb)) {
-        document.getElementById("titulo").textContent = "Enlace listo";
-        document.getElementById("sinopsis").textContent = "Sustituye el ID en la URL: /play/movie/12345";
+    if (!idTmdb) {
+        document.getElementById("titulo").textContent = "Sin ID";
+        document.getElementById("sinopsis").textContent = "Usa: /play/movie/ID";
         return;
     }
     try {
-        const res = await fetch(`https://api.themoviedb.org/3/movie/${idTmdb}?api_key=${API_KEY}&language=es-ES`);
-        const datos = await res.json();
-        if (datos.success === false) throw new Error("ID no existe");
+        // Petición directa, sin errores de formato
+        const respuesta = await fetch(`https://api.themoviedb.org/3/movie/${idTmdb}?api_key=${API_KEY}&language=es`);
+        if (!respuesta.ok) throw new Error(respuesta.status);
 
+        const datos = await respuesta.json();
         document.getElementById("titulo").textContent = datos.title;
         document.getElementById("sinopsis").textContent = datos.overview || "Sin sinopsis disponible.";
-    } catch (err) {
+    } catch (error) {
         document.getElementById("titulo").textContent = "ID no válido";
-        document.getElementById("sinopsis").textContent = "El ID " + idTmdb + " no existe en TMDb.";
+        document.getElementById("sinopsis").textContent = `El ID ${idTmdb} no existe o hubo un error. Prueba con otro.`;
     }
 }
 
-// Reproduce SÓLO si pegas un enlace (si no pones nada, no pasa nada)
+// Reproducción opcional
 document.getElementById("fuente").addEventListener("input", () => {
     const url = document.getElementById("fuente").value.trim();
     if (url) {
         document.getElementById("video").src = url;
         document.getElementById("video").load();
-    } else {
-        document.getElementById("video").removeAttribute("src");
     }
 });
 
