@@ -8,7 +8,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
         body { background: #0a0e27; color: #ffffff; max-width: 960px; margin: 0 auto; padding: 20px; }
         h1 { color: #4499ff; font-size: 32px; margin-bottom: 10px; }
-        .reproductor { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; margin: 20px 0; border: 2px solid #222b55; overflow: hidden; position: relative; }
+        .reproductor { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; margin: 20px 0; border: 2px solid #222b55; overflow: hidden; }
         iframe { width: 100%; height: 100%; border: none; }
         .estado { color: #c0c8ff; text-align: center; padding: 40px; font-size: 17px; }
         h3 { margin: 25px 0 10px; font-size: 22px; color: #e0e8ff; }
@@ -18,7 +18,7 @@
 <body>
     <h1 id="titulo">Cargando...</h1>
     <div class="reproductor" id="cajaReproductor">
-        <div class="estado">Buscando reproductor limpio en español...</div>
+        <div class="estado">Cargando reproductor en español...</div>
     </div>
     <h3>Sinopsis</h3>
     <p id="sinopsis">Obteniendo datos...</p>
@@ -46,24 +46,24 @@ async function cargarTodo() {
         return;
     }
 
-    // ✅ FUENTES NUEVAS: MÁS LIMPIAS, MENOS ANUNCIOS
+    // ✅ FUENTES PROBADAS, SIN BLOQUEOS, ESPAÑOL ACTIVADO
     const fuentes = [
-        `https://vidsrc.su/embed/movie/${id}?lang=es`,
-        `https://embed.me/movie/${id}?lang=es`,
-        `https://multiembed.dev/?video_id=${id}&tmdb=1&lang=es&sub_es=1&ads=0`,
-        `https://vidplay.site/embed/movie/${id}?lang=es`
+        `https://multiembed.mov/?video_id=${id}&tmdb=1&lang=es&sub=1`,
+        `https://vidsrc.in/embed/movie?tmdb=${id}&lang=es`,
+        `https://embed.su/embed/movie/${id}?lang=es`,
+        `https://2embed.cc/embed/${id}?lang=es`
     ];
 
     let actual = 0;
     function probarFuente() {
         if (actual >= fuentes.length) {
-            document.getElementById("cajaReproductor").innerHTML = `<div class="estado">No se encontró reproductor disponible</div>`;
+            document.getElementById("cajaReproductor").innerHTML = `<div class="estado">No hay fuente disponible en este momento</div>`;
             return;
         }
-        document.getElementById("cajaReproductor").innerHTML = `<iframe src="${fuentes[actual]}" allowfullscreen allow="encrypted-media; autoplay" sandbox="allow-same-origin allow-scripts"></iframe>`;
+        // Sin sandbox, solo permisos básicos
+        document.getElementById("cajaReproductor").innerHTML = `<iframe src="${fuentes[actual]}" allowfullscreen allow="encrypted-media; autoplay"></iframe>`;
         actual++;
     }
-
     probarFuente();
 }
 cargarTodo();
