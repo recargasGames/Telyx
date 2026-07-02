@@ -8,10 +8,11 @@
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
     body { background: #0a0e27; color: #ffffff; max-width: 960px; margin: 0 auto; padding: 20px; }
     h1 { text-align: center; color: #4499ff; margin-bottom: 25px; font-size: 30px; }
-    .input-group { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-    select, input { padding: 12px; border: 2px solid #222b55; border-radius: 6px; background: #151b40; color: #fff; font-size: 16px; flex: 1; min-width: 120px; }
+    .input-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+    select, input { padding: 14px; border: 2px solid #222b55; border-radius: 8px; background: #151b40; color: #fff; font-size: 18px; }
     #enlaceZona { background: #151b40; padding: 15px; border-radius: 8px; margin-bottom: 25px; display: none; }
     .enlace { color: #4499ff; word-break: break-all; font-weight: bold; margin: 10px 0; display: block; font-size: 15px; }
+    button { padding: 8px 15px; background: #2ecc71; border: none; border-radius: 4px; color: #000; font-weight: bold; cursor: pointer; }
     .copiado { color: #2ecc71; margin-top: 8px; display: none; }
     .reproductor { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; margin: 20px 0; border: 2px solid #222b55; overflow: hidden; display: none; }
     iframe { width: 100%; height: 100%; border: none; }
@@ -24,17 +25,17 @@
   <div class="input-group">
     <select id="tipo">
       <option value="movie">Película</option>
-      <option value="tv">Serie</option>
+      <option value="tv" selected>Serie</option>
     </select>
-    <input type="number" id="id" placeholder="Escribe ID TMDb ej: 1412">
-    <input type="number" id="temp" placeholder="Temp" style="width: 48%; display: none;">
-    <input type="number" id="epi" placeholder="Ep" style="width: 48%; display: none;">
+    <input type="number" id="id" placeholder="ID TMDb" value="1412">
+    <input type="number" id="temp" placeholder="Temporada" value="1">
+    <input type="number" id="epi" placeholder="Episodio" value="1">
   </div>
 
   <div id="enlaceZona">
     <p>🔗 Enlace listo:</p>
     <a id="enlace" class="enlace" target="_blank"></a>
-    <button onclick="copiarEnlace()" style="padding:8px 15px; background:#2ecc71; border:none; border-radius:4px; color:#000; font-weight:bold;">Copiar</button>
+    <button onclick="copiarEnlace()">Copiar enlace</button>
     <p id="mensajeCopiado" class="copiado">✅ Copiado</p>
   </div>
 
@@ -48,17 +49,13 @@
 const DOMINIO = "https://telyx.vercel.app";
 const API_KEY = "6196750b1fd09dd276a6106e75ee34f6";
 
-document.getElementById("tipo").addEventListener("change", mostrarCampos);
+// Activar al cargar la página
+window.addEventListener("load", actualizarTodo);
+
+document.getElementById("tipo").addEventListener("change", actualizarTodo);
 document.getElementById("id").addEventListener("input", actualizarTodo);
 document.getElementById("temp").addEventListener("input", actualizarTodo);
 document.getElementById("epi").addEventListener("input", actualizarTodo);
-
-function mostrarCampos() {
-  const esSerie = document.getElementById("tipo").value === "tv";
-  document.getElementById("temp").style.display = esSerie ? "inline-block" : "none";
-  document.getElementById("epi").style.display = esSerie ? "inline-block" : "none";
-  actualizarTodo();
-}
 
 function actualizarTodo() {
   const tipo = document.getElementById("tipo").value;
@@ -66,27 +63,28 @@ function actualizarTodo() {
   const temp = document.getElementById("temp").value || "1";
   const epi = document.getElementById("epi").value || "1";
 
-  if (!id || isNaN(id) || id.length < 5) {
+  if (!id || isNaN(id) || id.length < 4) {
     ocultarTodo();
     return;
   }
 
-  let urlEnlace, fuente;
+  let urlEnlace, fuenteVideo;
   if (tipo === "movie") {
     urlEnlace = `${DOMINIO}/play/movie/${id}`;
-    fuente = `https://vidsrc.me/embed/movie?tmdb=${id}`;
+    fuenteVideo = `https://vidsrc.me/embed/movie?tmdb=${id}`;
   } else {
     urlEnlace = `${DOMINIO}/play/tv/${id}/${temp}/${epi}`;
-    fuente = `https://vidsrc.me/embed/tv?tmdb=${id}&season=${temp}&episode=${epi}`;
+    fuenteVideo = `https://vidsrc.me/embed/tv?tmdb=${id}&season=${temp}&episode=${epi}`;
   }
 
   document.getElementById("enlace").textContent = urlEnlace;
   document.getElementById("enlace").href = urlEnlace;
   document.getElementById("enlaceZona").style.display = "block";
-  document.getElementById("videoFrame").src = fuente;
+
+  document.getElementById("videoFrame").src = fuenteVideo;
   document.getElementById("reproductorZona").style.display = "block";
 
-  cargarDatos(tipo, id);
+  cargarDatosTMDB(tipo, id);
 }
 
 function ocultarTodo() {
@@ -102,16 +100,18 @@ function copiarEnlace() {
   setTimeout(() => msg.style.display = "none", 2000);
 }
 
-async function cargarDatos(tipo, id) {
+async function cargarDatosTMDB(tipo, id) {
   try {
-    const end = tipo === "movie" ? `movie/${id}` : `tv/${id}`;
-    const res = await fetch(`https://api.themoviedb.org/3/${end}?api_key=${API_KEY}&language=es-ES`);
+    const endpoint = tipo === "movie" ? `movie/${id}` : `tv/${id}`;
+    const res = await fetch(`https://api.themoviedb.org/3/${endpoint}?api_key=${API_KEY}&language=es-ES`);
     const datos = await res.json();
     document.getElementById("infoPelicula").innerHTML = `
       <h3 style="color:#e0e8ff; margin:15px 0 8px;">${datos.title || datos.name}</h3>
       <p style="color:#c9d2ff; line-height:1.6;">${datos.overview || "Sin sinopsis disponible."}</p>
     `;
-  } catch {}
+  } catch {
+    document.getElementById("infoPelicula").innerHTML = "";
+  }
 }
 </script>
 </body>
