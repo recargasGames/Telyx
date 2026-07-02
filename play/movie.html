@@ -68,35 +68,31 @@
     <input type="text" id="fuente" class="entrada" placeholder="Pega aquí tu enlace .mp4 / .m3u8 (opcional)">
 
 <script>
-// 🔑 Clave válida
 const API_KEY = "86694f7126511f241254f76f60820528";
 
-// ✅ LECTURA MEJORADA DEL ID
-const ruta = window.location.pathname;
-const coincidencia = ruta.match(/\/play\/movie\/(\d+)/i);
-const idTmdb = coincidencia ? coincidencia[1] : "";
+// ✅ LECTURA 100% FIABLE DESDE PARÁMETRO
+const params = new URLSearchParams(window.location.search);
+const idTmdb = params.get("id") || "";
 
 async function cargarInfo() {
-    if (!idTmdb) {
-        document.getElementById("titulo").textContent = "Sin ID";
-        document.getElementById("sinopsis").textContent = "Usa: /play/movie/ID";
+    if (!idTmdb || isNaN(idTmdb)) {
+        document.getElementById("titulo").textContent = "Ingresa un ID";
+        document.getElementById("sinopsis").textContent = "Usa: ?id=12345";
         return;
     }
     try {
-        // Petición directa, sin errores de formato
-        const respuesta = await fetch(`https://api.themoviedb.org/3/movie/${idTmdb}?api_key=${API_KEY}&language=es`);
-        if (!respuesta.ok) throw new Error(respuesta.status);
+        const res = await fetch(`https://api.themoviedb.org/3/movie/${idTmdb}?api_key=${API_KEY}&language=es`);
+        if (!res.ok) throw new Error("No encontrado");
+        const datos = await res.json();
 
-        const datos = await respuesta.json();
         document.getElementById("titulo").textContent = datos.title;
         document.getElementById("sinopsis").textContent = datos.overview || "Sin sinopsis disponible.";
-    } catch (error) {
+    } catch {
         document.getElementById("titulo").textContent = "ID no válido";
-        document.getElementById("sinopsis").textContent = `El ID ${idTmdb} no existe o hubo un error. Prueba con otro.`;
+        document.getElementById("sinopsis").textContent = `El ID ${idTmdb} no existe en TMDb.`;
     }
 }
 
-// Reproducción opcional
 document.getElementById("fuente").addEventListener("input", () => {
     const url = document.getElementById("fuente").value.trim();
     if (url) {
@@ -110,3 +106,4 @@ cargarInfo();
 
 </body>
 </html>
+
