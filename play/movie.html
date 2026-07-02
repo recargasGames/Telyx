@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TELYX | Película</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+        body { background: #0a0e27; color: #ffffff; max-width: 960px; margin: 0 auto; padding: 20px; }
+        h1 { color: #4499ff; font-size: 32px; margin-bottom: 10px; }
+        .reproductor { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; margin: 20px 0; border: 2px solid #222b55; overflow: hidden; }
+        iframe { width: 100%; height: 100%; border: none; }
+        .estado { color: #c0c8ff; text-align: center; padding: 40px; font-size: 17px; }
+        h3 { margin: 25px 0 10px; font-size: 22px; color: #e0e8ff; }
+        p { color: #c9d2ff; line-height: 1.7; text-align: justify; font-size: 16px; }
+    </style>
+</head>
+<body>
+    <h1 id="titulo">Cargando...</h1>
+    <div class="reproductor" id="cajaReproductor">
+        <div class="estado">Cargando reproductor...</div>
+    </div>
+    <h3>Sinopsis</h3>
+    <p id="sinopsis">Obteniendo datos...</p>
+
+<script>
+const API_KEY = "6196750b1fd09dd276a6106e75ee34f6";
+let id;
+const ruta = window.location.pathname;
+const partes = ruta.split("/");
+id = partes[3];
+
+async function cargarTodo() {
+    if (!id || isNaN(id)) {
+        document.getElementById("titulo").textContent = "ID no válido";
+        document.getElementById("sinopsis").textContent = "Enlace incorrecto";
+        return;
+    }
+
+    try {
+        const res = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${API_KEY}&language=es-ES`);
+        const datos = await res.json();
+        document.getElementById("titulo").textContent = datos.title;
+        document.getElementById("sinopsis").textContent = datos.overview || "Sin sinopsis disponible";
+    } catch {
+        document.getElementById("titulo").textContent = "Error al cargar";
+    }
+
+    // ✅ Fuente igual a Unlimplay: anuncio corto, SIN REDIRECCIONES
+    const fuentes = [
+        `https://vidsrc.me/embed/movie?tmdb=${id}`,
+        `https://vidsrc.in/embed/movie?tmdb=${id}`,
+        `https://vidsrc.su/embed/movie/${id}`
+    ];
+
+    let actual = 0;
+    function probar() {
+        if (actual >= fuentes.length) {
+            document.getElementById("cajaReproductor").innerHTML = `<div class="estado">No disponible</div>`;
+            return;
+        }
+        document.getElementById("cajaReproductor").innerHTML = `<iframe src="${fuentes[actual]}" allowfullscreen allow="encrypted-media; autoplay"></iframe>`;
+        actual++;
+    }
+    probar();
+}
+cargarTodo();
+</script>
+</body>
+</html>
+
