@@ -18,7 +18,7 @@
 <body>
     <h1 id="titulo">Cargando...</h1>
     <div class="reproductor" id="cajaReproductor">
-        <div class="estado">Cargando reproductor en español...</div>
+        <div class="estado">Cargando reproductor limpio...</div>
     </div>
     <h3>Sinopsis</h3>
     <p id="sinopsis">Obteniendo datos...</p>
@@ -46,21 +46,20 @@ async function cargarTodo() {
         return;
     }
 
-    // ✅ FUENTES PROBADAS, SIN BLOQUEOS, ESPAÑOL ACTIVADO
+    // ✅ SOLO FUENTES LIMPIAS, MENOS ANUNCIOS Y REDIRECCIONES
     const fuentes = [
-        `https://multiembed.mov/?video_id=${id}&tmdb=1&lang=es&sub=1`,
-        `https://vidsrc.in/embed/movie?tmdb=${id}&lang=es`,
-        `https://embed.su/embed/movie/${id}?lang=es`,
-        `https://2embed.cc/embed/${id}?lang=es`
+        `https://vidsrc.pm/embed/movie/${id}?lang=es`,
+        `https://vidsrc.me/embed/movie?tmdb=${id}&lang=es`,
+        `https://vidplay.site/embed/movie/${id}?lang=es`,
+        `https://embedme.top/embed/movie/${id}?lang=es`
     ];
 
     let actual = 0;
     function probarFuente() {
         if (actual >= fuentes.length) {
-            document.getElementById("cajaReproductor").innerHTML = `<div class="estado">No hay fuente disponible en este momento</div>`;
+            document.getElementById("cajaReproductor").innerHTML = `<div class="estado">No hay reproductor disponible</div>`;
             return;
         }
-        // Sin sandbox, solo permisos básicos
         document.getElementById("cajaReproductor").innerHTML = `<iframe src="${fuentes[actual]}" allowfullscreen allow="encrypted-media; autoplay"></iframe>`;
         actual++;
     }
