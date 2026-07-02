@@ -4,4 +4,3 @@
     {"source": "/play/tv/:id/:temp/:epi", "destination": "/play/tv.html"}
   ]
 }
-
