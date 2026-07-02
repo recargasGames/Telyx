@@ -1,48 +1,82 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TELYX | Serie</title>
-  <style>
-    *{margin:0;padding:0;box-sizing:border-box}
-    body{background:#0a0e27;color:#fff;font-family:Arial,sans-serif;padding:20px;max-width:960px;margin:0 auto}
-    h1{color:#4499ff}
-    .info{color:#88aaff;margin-bottom:10px}
-    .reproductor{width:100%;aspect-ratio:16/9;background:#000;border-radius:12px;margin:20px 0}
-    video{width:100%;height:100%}
-    input{width:100%;padding:12px;background:#151b40;border:1px solid #2a3470;color:#fff;border-radius:6px}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TELYX | Serie</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+        body { background: #0a0e27; color: #ffffff; max-width: 960px; margin: 0 auto; padding: 20px; }
+        h1 { color: #4499ff; font-size: 32px; margin-bottom: 5px; }
+        .info { color: #88aaff; font-size: 18px; margin-bottom: 15px; }
+        .reproductor { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; margin: 20px 0; border: 2px solid #222b55; }
+        video { width: 100%; height: 100%; }
+        .entrada { width: 100%; padding: 14px; background: #151b40; border: 1px solid #2a3470; border-radius: 8px; color: #fff; font-size: 16px; }
+        h3 { margin: 25px 0 10px; font-size: 22px; }
+        p { color: #c9d2ff; line-height: 1.6; }
+    </style>
 </head>
 <body>
-  <h1 id="titulo">Cargando...</h1>
-  <p class="info" id="tempEp"></p>
-  <div class="reproductor">
-    <video id="video" controls allowfullscreen></video>
-  </div>
-  <input type="text" id="fuente" placeholder="Pega aquí TU enlace .mp4 / .m3u8">
-  <p id="sinopsis" style="margin-top:20px;color:#c9d2ff"></p>
+
+    <h1 id="titulo">Cargando información...</h1>
+    <p class="info" id="tempEp"></p>
+    <div class="reproductor">
+        <video id="video" controls preload="metadata" allowfullscreen></video>
+    </div>
+    <input type="text" id="fuente" class="entrada" placeholder="Pega aquí tu enlace .mp4 / .m3u8 (opcional)">
+    <h3>Sinopsis</h3>
+    <p id="sinopsis">Obteniendo datos de TMDb...</p>
 
 <script>
-const API_KEY = "86694f7126511f241254f76f60820528";
-const partes=window.location.pathname.split("/");
-const id=partes[3], t=partes[4]||1, e=partes[5]||1;
+// ✅ TU CLAVE PROPIA
+const API_KEY = "6196750b1fd09dd276a6106e75ee34f6";
 
-async function cargar(){
-  try{
-    const res=await fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${API_KEY}&language=es`);
-    const datos=await res.json();
-    document.getElementById("titulo").textContent=datos.name;
-    document.getElementById("tempEp").textContent=`Temporada ${t} • Episodio ${e}`;
-    document.getElementById("sinopsis").textContent=datos.overview;
-  }catch(e){document.getElementById("titulo").textContent="ID no válido"}
+const ruta = window.location.pathname;
+const partes = ruta.split("/");
+let id, temp, epi;
+
+if (ruta.includes("/play/tv/")) {
+    id = partes[3];
+    temp = partes[4] || "1";
+    epi = partes[5] || "1";
+} else {
+    const params = new URLSearchParams(window.location.search);
+    id = params.get("id");
+    temp = params.get("t") || "1";
+    epi = params.get("e") || "1";
 }
 
-document.getElementById("fuente").addEventListener("input",e=>{
-  document.getElementById("video").src=e.target.value.trim();
+async function cargarDatos() {
+    if (!id || isNaN(id)) {
+        document.getElementById("titulo").textContent = "Ingresa un ID válido";
+        document.getElementById("sinopsis").textContent = "Usa: /play/tv/12345/1/1 o ?id=12345&t=1&e=1";
+        return;
+    }
+    try {
+        const respuesta = await fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${API_KEY}&language=es-ES`);
+        if (!respuesta.ok) throw new Error("Error en la consulta");
+        const datos = await respuesta.json();
+        
+        document.getElementById("titulo").textContent = datos.name;
+        document.getElementById("tempEp").textContent = `Temporada ${temp} • Episodio ${epi}`;
+        document.getElementById("sinopsis").textContent = datos.overview || "Sin sinopsis disponible.";
+    } catch (error) {
+        document.getElementById("titulo").textContent = "No se pudo cargar";
+        document.getElementById("sinopsis").textContent = "Verifica el ID o intenta más tarde.";
+        console.error(error);
+    }
+}
+
+document.getElementById("fuente").addEventListener("input", () => {
+    const enlace = document.getElementById("fuente").value.trim();
+    if (enlace) {
+        document.getElementById("video").src = enlace;
+        document.getElementById("video").load();
+    }
 });
 
-cargar();
+cargarDatos();
 </script>
+
 </body>
 </html>
