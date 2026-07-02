@@ -17,46 +17,54 @@
 </head>
 <body>
 
-    <h1 id="titulo">Cargando información...</h1>
+    <h1 id="titulo">Cargando...</h1>
     <div class="reproductor">
-        <!-- 🎬 Reproducción automática con solo el ID -->
         <iframe id="iframeVideo" allowfullscreen allow="autoplay; encrypted-media"></iframe>
     </div>
-
     <input type="text" id="fuente" class="entrada" placeholder="Opcional: Pega tu enlace .mp4 / .m3u8">
     <h3>Sinopsis</h3>
-    <p id="sinopsis">Obteniendo datos de TMDb...</p>
+    <p id="sinopsis">Obteniendo datos...</p>
 
 <script>
-// ✅ Tu clave propia
+// ✅ Tu clave TMDb
 const API_KEY = "6196750b1fd09dd276a6106e75ee34f6";
 
-// Leer ID de la ruta
+// 🛠️ LECTURA DE ID SEGURA: funciona por ruta O por ?id=
+let id;
 const ruta = window.location.pathname;
-const id = ruta.split("/")[3];
+const params = new URLSearchParams(window.location.search);
+
+if (ruta.startsWith("/play/movie/") && ruta.split("/").length >= 4) {
+    id = ruta.split("/")[3];
+} else if (params.get("id")) {
+    id = params.get("id");
+}
 
 async function cargarTodo() {
     if (!id || isNaN(id)) {
         document.getElementById("titulo").textContent = "ID no válido";
-        document.getElementById("sinopsis").textContent = "Usa: /play/movie/ID_DE_TMDB";
+        document.getElementById("sinopsis").textContent = "Usa: /play/movie/ID o ?id=ID";
         return;
     }
 
-    // Cargar título y sinopsis desde TMDb
+    // Cargar datos de TMDb
     try {
         const res = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${API_KEY}&language=es-ES`);
+        if (!res.ok) throw new Error();
         const datos = await res.json();
         document.getElementById("titulo").textContent = datos.title;
         document.getElementById("sinopsis").textContent = datos.overview || "Sin sinopsis disponible.";
     } catch {
-        document.getElementById("titulo").textContent = "Error al cargar datos";
+        document.getElementById("titulo").textContent = "ID no existe";
+        document.getElementById("sinopsis").textContent = "Verifica el número en TMDb.";
+        return;
     }
 
-    // 🎥 Reproducción automática con fuente compatible en Venezuela
+    // 🎥 Reproducción automática
     document.getElementById("iframeVideo").src = `https://vidsrc.xyz/embed/movie/${id}?lang=es`;
 }
 
-// Si quieres usar tu propio enlace
+// Reproducción con tu propio enlace
 document.getElementById("fuente").addEventListener("input", () => {
     const enlace = document.getElementById("fuente").value.trim();
     if (enlace) {
