@@ -52,7 +52,7 @@
 
     <div class="reproductor">
         <video id="video" controls preload="metadata" allowfullscreen>
-            Tu navegador no soporta reproducción de video.
+            Tu navegador no soporta video.
         </video>
     </div>
 
@@ -68,35 +68,33 @@
     <input type="text" id="fuente" class="entrada" placeholder="Pega aquí tu enlace .mp4 / .m3u8">
 
 <script>
-// 🔑 Clave válida de TMDb
 const API_KEY = "86694f7126511f241254f76f60820528";
 
-// 📌 Leer ID correctamente
+// ✅ LECTURA CORRECTA DEL ID
+let idTmdb = "";
 const ruta = window.location.pathname;
-const partes = ruta.split('/');
-const idTmdb = partes[3] || '';
+const coincidencia = ruta.match(/\/play\/movie\/(\d+)/);
+if (coincidencia && coincidencia[1]) idTmdb = coincidencia[1];
 
-// Cargar datos
 async function cargarInfo() {
     if (!idTmdb) {
-        document.getElementById("titulo").textContent = "Sin ID indicado";
-        document.getElementById("sinopsis").textContent = "El enlace debe tener el ID: /play/movie/ID_AQUI";
+        document.getElementById("titulo").textContent = "Falta el ID";
+        document.getElementById("sinopsis").textContent = "Usa: /play/movie/ID_AQUI";
         return;
     }
     try {
         const res = await fetch(`https://api.themoviedb.org/3/movie/${idTmdb}?api_key=${API_KEY}&language=es-ES`);
         const datos = await res.json();
-        if (datos.success === false) throw new Error();
+        if (!datos || datos.success === false) throw new Error();
 
         document.getElementById("titulo").textContent = datos.title;
         document.getElementById("sinopsis").textContent = datos.overview || "Sin sinopsis disponible.";
-    } catch (err) {
+    } catch {
         document.getElementById("titulo").textContent = "ID no válido";
-        document.getElementById("sinopsis").textContent = "Revisa que el ID de TMDb sea correcto.";
+        document.getElementById("sinopsis").textContent = "Verifica que el ID de TMDb sea correcto.";
     }
 }
 
-// Reproducir al pegar
 document.getElementById("fuente").addEventListener("input", () => {
     const url = document.getElementById("fuente").value.trim();
     if (url) {
