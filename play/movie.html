@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TELYX | Reproductor Automático</title>
+    <title>TELYX | Película</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
         body { background: #0a0e27; color: #ffffff; max-width: 960px; margin: 0 auto; padding: 20px; }
         h1 { color: #4499ff; font-size: 32px; margin-bottom: 10px; }
-        .reproductor { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; margin: 20px 0; border: 2px solid #222b55; overflow: hidden; position: relative; }
+        .reproductor { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; margin: 20px 0; border: 2px solid #222b55; overflow: hidden; }
         iframe { width: 100%; height: 100%; border: none; }
         .estado { color: #c0c8ff; text-align: center; padding: 40px; font-size: 17px; }
         h3 { margin: 25px 0 10px; font-size: 22px; color: #e0e8ff; }
@@ -16,74 +16,61 @@
     </style>
 </head>
 <body>
-
     <h1 id="titulo">Cargando...</h1>
-
     <div class="reproductor" id="cajaReproductor">
-        <div class="estado">Buscando reproducción automática...</div>
+        <div class="estado">Buscando versión limpia en español...</div>
     </div>
-
     <h3>Sinopsis</h3>
-    <p id="sinopsis">Obteniendo datos de TMDb...</p>
+    <p id="sinopsis">Obteniendo datos...</p>
 
 <script>
-// ✅ Tu clave TMDb
 const API_KEY = "6196750b1fd09dd276a6106e75ee34f6";
-
-// Leer ID
 let id;
 const ruta = window.location.pathname;
-const parametros = new URLSearchParams(window.location.search);
-
-if (ruta.startsWith("/play/movie/") && ruta.split("/").length >= 4) {
-    id = ruta.split("/")[3];
-} else if (parametros.get("id")) {
-    id = parametros.get("id");
-}
+const params = new URLSearchParams(window.location.search);
+if (ruta.startsWith("/play/movie/")) id = ruta.split("/")[3];
+else if (params.get("id")) id = params.get("id");
 
 async function cargarTodo() {
     if (!id || isNaN(id)) {
-        document.getElementById("titulo").textContent = "ID no válido";
-        document.getElementById("sinopsis").textContent = "Usa: ?id=502356";
+        document.getElementById("titulo").textContent = "ID inválido";
         return;
     }
-
-    // 1. Cargar datos de TMDb
     try {
         const res = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${API_KEY}&language=es-ES`);
         const datos = await res.json();
         document.getElementById("titulo").textContent = datos.title;
-        document.getElementById("sinopsis").textContent = datos.overview || "Sin sinopsis disponible.";
+        document.getElementById("sinopsis").textContent = datos.overview || "Sin sinopsis";
     } catch {
-        document.getElementById("titulo").textContent = "Error al cargar datos";
-        document.getElementById("cajaReproductor").innerHTML = `<div class="estado">No se pudo conectar</div>`;
+        document.getElementById("titulo").textContent = "Error al cargar";
         return;
     }
 
-    // 2. 🎥 FUENTES AUTOMÁTICAS: funcionan en Venezuela, en español
-    // Son las mismas que usan Onlyplay/Unlimplay
+    // ✅ FUENTES MÁS LIMPIAS: MENOS REDIRECCIONES, MÁS ESPAÑOL
     const fuentes = [
-        `https://multiembed.mov/?video_id=${id}&tmdb=1&lang=es`,
-        `https://vidsrc.me/embed/movie?tmdb=${id}`,
-        `https://embed.su/embed/movie/${id}`,
-        `https://vidplay.online/embed/movie/${id}`
+        // 🥇 La más estable, casi no redirige
+        `https://vidbinge.dev/embed/movie/${id}?lang=es`,
+        // 🥈 Muy buena, 1 redirección máximo
+        `https://embed.su/embed/movie/${id}?lang=es`,
+        // 🥉 Alternativa limpia
+        `https://player.vidsrc.nl/embed/movie/${id}?lang=es`,
+        // Última opción
+        `https://multiembed.mov/?video_id=${id}&tmdb=1&lang=es&sub_es=1&ads=0`
     ];
 
     let actual = 0;
-    function probarFuente() {
+    function probar() {
         if (actual >= fuentes.length) {
-            document.getElementById("cajaReproductor").innerHTML = `<div class="estado">No hay fuente disponible en este momento</div>`;
+            document.getElementById("cajaReproductor").innerHTML = `<div class="estado">No hay fuente disponible</div>`;
             return;
         }
-        document.getElementById("cajaReproductor").innerHTML = `<iframe src="${fuentes[actual]}" allowfullscreen allow="encrypted-media; autoplay"></iframe>`;
+        document.getElementById("cajaReproductor").innerHTML = `<iframe src="${fuentes[actual]}" allowfullscreen allow="encrypted-media; autoplay" sandbox="allow-same-origin allow-scripts allow-forms allow-popups"></iframe>`;
         actual++;
     }
-
-    probarFuente();
+    probar();
 }
-
 cargarTodo();
 </script>
-
 </body>
 </html>
+
