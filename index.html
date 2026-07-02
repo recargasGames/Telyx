@@ -23,7 +23,7 @@
       <option value="movie">Película</option>
       <option value="tv">Serie</option>
     </select>
-    <input type="number" id="id" placeholder="ID TMDb ej: 1226863">
+    <input type="number" id="id" placeholder="ID TMDb ej: 502356">
     <input type="number" id="temp" placeholder="Temp" style="width:70px;display:none">
     <input type="number" id="epi" placeholder="Ep" style="width:70px;display:none">
     <button onclick="generar()">Generar Enlace</button>
@@ -37,27 +37,27 @@
 
 <script>
 const DOMINIO = "https://telyx.vercel.app";
-document.getElementById("tipo").onchange = () => {
-  const esTV = document.getElementById("tipo").value === "tv";
-  document.getElementById("temp").style.display = esTV ? "inline-block" : "none";
-  document.getElementById("epi").style.display = esTV ? "inline-block" : "none";
+document.getElementById("tipo").onchange=()=>{
+  const esTV=document.getElementById("tipo").value==="tv";
+  document.getElementById("temp").style.display=esTV?"inline-block":"none";
+  document.getElementById("epi").style.display=esTV?"inline-block":"none";
 };
-function generar() {
-  const id = document.getElementById("id").value.trim();
-  const tipo = document.getElementById("tipo").value;
-  const t = document.getElementById("temp").value || 1;
-  const e = document.getElementById("epi").value || 1;
-  if (!id) return alert("Ingresa un ID válido");
-  const url = tipo === "movie"
-    ? `${DOMINIO}/play/movie/${id}?lang=es`
-    : `${DOMINIO}/play/tv/${id}/${t}/${e}?lang=es`;
-  document.getElementById("link").href = url;
-  document.getElementById("link").textContent = url;
-  document.getElementById("resultado").style.display = "block";
+function generar(){
+  const id=document.getElementById("id").value.trim();
+  const tipo=document.getElementById("tipo").value;
+  const t=document.getElementById("temp").value||1;
+  const e=document.getElementById("epi").value||1;
+  if(!id)return alert("Ingresa ID válido");
+  let url=tipo==="movie"
+    ? `${DOMINIO}/play/movie.html?id=${id}`
+    : `${DOMINIO}/play/tv.html?id=${id}&t=${t}&e=${e}`;
+  document.getElementById("link").href=url;
+  document.getElementById("link").textContent=url;
+  document.getElementById("resultado").style.display="block";
 }
-function copiar() {
+function copiar(){
   navigator.clipboard.writeText(document.getElementById("link").textContent);
-  document.getElementById("msg").style.display = "block";
+  document.getElementById("msg").style.display="block";
 }
 </script>
 </body>
