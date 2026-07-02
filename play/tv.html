@@ -9,10 +9,9 @@
         body { background: #0a0e27; color: #ffffff; max-width: 960px; margin: 0 auto; padding: 20px; }
         h1 { color: #4499ff; font-size: 32px; margin-bottom: 5px; }
         .info { color: #88aaff; font-size: 18px; margin-bottom: 15px; }
-        .reproductor { width: 100%; aspect-ratio: 16/9; background: #111430; border-radius: 12px; margin: 20px 0; border: 2px solid #222b55; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-        .aviso { color: #c0c8ff; text-align: center; padding: 30px; font-size: 17px; }
-        video { width: 100%; height: 100%; border-radius: 10px; }
-        .entrada { width: 100%; padding: 16px; background: #151b40; border: 1px solid #2a3470; border-radius: 8px; color: #fff; font-size: 16px; margin-bottom: 25px; }
+        .reproductor { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; margin: 20px 0; border: 2px solid #222b55; overflow: hidden; }
+        iframe { width: 100%; height: 100%; border: none; }
+        .estado { text-align: center; padding: 40px; color: #c0c8ff; font-size: 16px; }
         h3 { margin: 25px 0 10px; font-size: 22px; color: #e0e8ff; }
         p { color: #c9d2ff; line-height: 1.7; text-align: justify; font-size: 16px; }
     </style>
@@ -23,13 +22,8 @@
     <p class="info" id="tempEp"></p>
 
     <div class="reproductor" id="cajaReproductor">
-        <div class="aviso">
-            Pega tu enlace .mp4 o .m3u8 en el recuadro de abajo<br>
-            para reproducir esta serie
-        </div>
+        <div class="estado">Conectando reproductor...</div>
     </div>
-
-    <input type="text" id="fuente" class="entrada" placeholder="👉 Pega aquí tu enlace de video .mp4 / .m3u8">
 
     <h3>Sinopsis</h3>
     <p id="sinopsis">Obteniendo información...</p>
@@ -52,37 +46,47 @@ if (ruta.startsWith("/play/tv/") && ruta.split("/").length >= 6) {
     epi = parametros.get("e") || "1";
 }
 
-async function cargarDatos() {
+async function cargarTodo() {
     if (!id || isNaN(id)) {
         document.getElementById("titulo").textContent = "ID no válido";
         document.getElementById("sinopsis").textContent = "Usa: /play/tv/ID/1/1 o ?id=ID&t=1&e=1";
+        document.getElementById("cajaReproductor").innerHTML = `<div class="estado">Ingresa un ID válido de TMDb</div>`;
         return;
     }
 
     try {
-        const respuesta = await fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${API_KEY}&language=es-ES`);
-        if (!respuesta.ok) throw new Error();
-        const datos = await respuesta.json();
-        
+        const res = await fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${API_KEY}&language=es-ES`);
+        if (!res.ok) throw new Error();
+        const datos = await res.json();
         document.getElementById("titulo").textContent = datos.name;
         document.getElementById("tempEp").textContent = `Temporada ${temp} • Episodio ${epi}`;
         document.getElementById("sinopsis").textContent = datos.overview || "Sin sinopsis disponible.";
     } catch {
-        document.getElementById("titulo").textContent = "ID no encontrado";
+        document.getElementById("titulo").textContent = "ID no existe";
         document.getElementById("sinopsis").textContent = "Verifica el número en TheMovieDB.";
+        document.getElementById("cajaReproductor").innerHTML = `<div class="estado">No se encontró información</div>`;
+        return;
     }
+
+    const fuentes = [
+        `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${temp}&e=${epi}&lang=es&autoplay=1`,
+        `https://embed.su/embed/tv/${id}/${temp}/${epi}?lang=es`,
+        `https://vidbinge.dev/embed/tv/${id}/${temp}/${epi}`
+    ];
+
+    let fuenteActual = 0;
+    function cargarFuente() {
+        if (fuenteActual >= fuentes.length) {
+            document.getElementById("cajaReproductor").innerHTML = `<div class="estado">No hay fuente disponible para este episodio</div>`;
+            return;
+        }
+        document.getElementById("cajaReproductor").innerHTML = `<iframe src="${fuentes[fuenteActual]}" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture"></iframe>`;
+    }
+
+    cargarFuente();
 }
 
-document.getElementById("fuente").addEventListener("input", () => {
-    const enlace = document.getElementById("fuente").value.trim();
-    if (enlace) {
-        document.getElementById("cajaReproductor").innerHTML = `<video src="${enlace}" controls preload="metadata" allowfullscreen></video>`;
-    } else {
-        document.getElementById("cajaReproductor").innerHTML = `<div class="aviso">Pega tu enlace .mp4 o .m3u8 aquí abajo</div>`;
-    }
-});
-
-cargarDatos();
+cargarTodo();
 </script>
 
 </body>
