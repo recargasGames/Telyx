@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TELY-XI | Generador</title>
+  <title>TELYX | Generador</title>
   <style>
     *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
     body{background:#0a0a0a;color:#fff;max-width:600px;margin:40px auto;padding:20px}
@@ -17,7 +17,7 @@
   </style>
 </head>
 <body>
-  <h1>🔗 TELY-XI | Mi Generador</h1>
+  <h1>🔗 TELYX | Mi Generador</h1>
   <div class="grupo">
     <select id="tipo">
       <option value="movie">Película</option>
@@ -26,7 +26,7 @@
     <input type="number" id="id" placeholder="ID TMDb ej: 1226863">
     <input type="number" id="temp" placeholder="Temp" style="width:70px;display:none">
     <input type="number" id="epi" placeholder="Ep" style="width:70px;display:none">
-    <button onclick="generar()">Generar</button>
+    <button onclick="generar()">Generar Enlace</button>
   </div>
   <div id="resultado">
     <p>Tu enlace listo:</p>
@@ -36,7 +36,7 @@
   </div>
 
 <script>
-const DOMINIO = "https://tely-xi.vercel.app";
+const DOMINIO = "https://telyx.vercel.app";
 document.getElementById("tipo").onchange = () => {
   const esTV = document.getElementById("tipo").value === "tv";
   document.getElementById("temp").style.display = esTV ? "inline-block" : "none";
