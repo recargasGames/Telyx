@@ -18,25 +18,20 @@
 <body>
     <h1 id="titulo">Cargando...</h1>
     <div class="reproductor" id="cajaReproductor">
-        <div class="estado">Cargando reproductor...</div>
+        <div class="estado">Cargando versión en español...</div>
     </div>
     <h3>Sinopsis</h3>
     <p id="sinopsis">Obteniendo datos...</p>
 
 <script>
 const API_KEY = "6196750b1fd09dd276a6106e75ee34f6";
-let id;
-const ruta = window.location.pathname;
-const partes = ruta.split("/");
-id = partes[3];
+const id = window.location.pathname.split("/")[3];
 
 async function cargarTodo() {
     if (!id || isNaN(id)) {
         document.getElementById("titulo").textContent = "ID no válido";
-        document.getElementById("sinopsis").textContent = "Enlace incorrecto";
         return;
     }
-
     try {
         const res = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${API_KEY}&language=es-ES`);
         const datos = await res.json();
@@ -46,17 +41,17 @@ async function cargarTodo() {
         document.getElementById("titulo").textContent = "Error al cargar";
     }
 
-    // ✅ Fuente igual a Unlimplay: anuncio corto, SIN REDIRECCIONES
+    // ✅ FUENTES EN ORDEN: ESPAÑOL, SIN REDIRECCIONES
     const fuentes = [
-        `https://vidsrc.me/embed/movie?tmdb=${id}`,
-        `https://vidsrc.in/embed/movie?tmdb=${id}`,
-        `https://vidsrc.su/embed/movie/${id}`
+        `https://multiembed.mov/?video_id=${id}&tmdb=1&lang=es&sub_es=1&ads=0`,
+        `https://embed.su/embed/movie/${id}?lang=es`,
+        `https://vidsrc.in/embed/movie?tmdb=${id}&lang=es`
     ];
 
     let actual = 0;
     function probar() {
         if (actual >= fuentes.length) {
-            document.getElementById("cajaReproductor").innerHTML = `<div class="estado">No disponible</div>`;
+            document.getElementById("cajaReproductor").innerHTML = `<div class="estado">No hay versión en español disponible</div>`;
             return;
         }
         document.getElementById("cajaReproductor").innerHTML = `<iframe src="${fuentes[actual]}" allowfullscreen allow="encrypted-media; autoplay"></iframe>`;
@@ -68,4 +63,3 @@ cargarTodo();
 </script>
 </body>
 </html>
-
