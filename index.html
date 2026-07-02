@@ -3,85 +3,81 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TELYX | Generador de Enlaces</title>
+  <title>TELYX | Generador</title>
   <style>
     *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
     body{background:#0a0a0a;color:#fff;max-width:600px;margin:40px auto;padding:20px}
     h1{text-align:center;color:#4499ff;margin-bottom:30px}
     .grupo{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px}
-    input,select{padding:12px;border:2px solid #222;border-radius:6px;background:#151515;color:#fff;font-size:16px}
-    button{padding:12px 18px;border:none;border-radius:6px;background:#4499ff;color:#000;font-weight:bold;cursor:pointer}
-    #resultado{margin-top:25px;padding:15px;background:#151515;border-radius:8px;display:none}
+    input,select{padding:12px;border:2px solid #222;border-radius:6px;background:#1a1f40;color:#fff;font-size:16px;width:100%}
+    button{padding:12px 18px;border:none;border-radius:6px;background:#4499ff;color:#000;font-weight:bold;cursor:pointer;width:100%}
+    #resultado{margin-top:25px;padding:15px;background:#1a1f40;border-radius:8px;display:none}
     .enlace{color:#4499ff;word-break:break-all;font-weight:bold;margin:10px 0;display:block}
-    .ok{color:#2ecc71;display:none}
+    .ok{color:#2ecc71;margin-top:8px;display:none}
   </style>
 </head>
 <body>
-  <h1>🔗 TELYX | Generador</h1>
+  <h1>🔗 TELYX | Generador de Enlaces</h1>
+
   <div class="grupo">
     <select id="tipo">
       <option value="movie">Película</option>
       <option value="tv">Serie</option>
     </select>
     <input type="number" id="id" placeholder="ID TMDb ej: 502356">
-    <input type="number" id="temp" placeholder="Temp" style="width:70px;display:none">
-    <input type="number" id="epi" placeholder="Ep" style="width:70px;display:none">
-    <button onclick="generar()">Generar Enlace</button>
+    <input type="number" id="temp" placeholder="Temporada" style="width:48%;display:none">
+    <input type="number" id="epi" placeholder="Episodio" style="width:48%;display:none">
   </div>
 
-  <!-- OPCIÓN 2: Pones TU enlace y te damos el corto -->
-  <div style="margin-top:30px;padding:15px;border:1px solid #222;border-radius:8px">
-    <h3>🎥 Tienes el enlace del video?</h3>
-    <input type="text" id="enlaceVideo" placeholder="Pega aquí tu .mp4 / .m3u8" style="width:100%;margin:10px 0">
-    <button onclick="crearEnlaceCorto()">Crear enlace propio</button>
-    <div id="corto" style="margin-top:10px;display:none">
-      <p>Tu enlace: <span id="miCorto" style="color:#4499ff;font-weight:bold"></span></p>
-    </div>
-  </div>
+  <button onclick="generar()">Generar Enlace</button>
 
   <div id="resultado">
     <p>Tu enlace listo:</p>
     <a id="link" class="enlace" target="_blank"></a>
-    <button onclick="copiar()">Copiar</button>
+    <button onclick="copiar()">Copiar al portapapeles</button>
     <p id="msg" class="ok">✅ Copiado</p>
   </div>
 
 <script>
+// ✅ TU DOMINIO EXACTO
 const DOMINIO = "https://telyx.vercel.app";
-document.getElementById("tipo").onchange=()=>{
-  const esTV=document.getElementById("tipo").value==="tv";
-  document.getElementById("temp").style.display=esTV?"inline-block":"none";
-  document.getElementById("epi").style.display=esTV?"inline-block":"none";
+
+document.getElementById("tipo").onchange = () => {
+  const esSerie = document.getElementById("tipo").value === "tv";
+  document.getElementById("temp").style.display = esSerie ? "inline-block" : "none";
+  document.getElementById("epi").style.display = esSerie ? "inline-block" : "none";
 };
 
-// 🎯 Opción 1: Pones ID → genera tu enlace
-function generar(){
-  const id=document.getElementById("id").value.trim();
-  const tipo=document.getElementById("tipo").value;
-  const t=document.getElementById("temp").value||1;
-  const e=document.getElementById("epi").value||1;
-  if(!id)return alert("Ingresa ID válido");
-  let url=tipo==="movie"
-    ? `${DOMINIO}/play/movie/${id}`
-    : `${DOMINIO}/play/tv/${id}/${t}/${e}`;
-  document.getElementById("link").href=url;
-  document.getElementById("link").textContent=url;
-  document.getElementById("resultado").style.display="block";
+// 🎯 FUNCIÓN DE GENERACIÓN CORREGIDA
+function generar() {
+  const id = document.getElementById("id").value.trim();
+  const tipo = document.getElementById("tipo").value;
+  const temp = document.getElementById("temp").value || "1";
+  const epi = document.getElementById("epi").value || "1";
+
+  if (!id || isNaN(id)) {
+    alert("⚠️ Pon un ID numérico válido");
+    return;
+  }
+
+  // Construye el enlace igual que el que ya funciona
+  let url;
+  if (tipo === "movie") {
+    url = `${DOMINIO}/play/movie/${id}`;
+  } else {
+    url = `${DOMINIO}/play/tv/${id}/${temp}/${epi}`;
+  }
+
+  // Muestra el enlace
+  document.getElementById("link").textContent = url;
+  document.getElementById("link").href = url;
+  document.getElementById("resultado").style.display = "block";
 }
 
-// 🎯 Opción 2: Pones tu enlace → te damos el enlace corto
-function crearEnlaceCorto(){
-  const enlace=document.getElementById("enlaceVideo").value.trim();
-  if(!enlace)return alert("Pega tu enlace primero");
-  const idUnico = btoa(enlace).slice(0,12); // crea código único
-  const url = `${DOMINIO}/v/${idUnico}`;
-  document.getElementById("miCorto").textContent=url;
-  document.getElementById("corto").style.display="block";
-}
-
-function copiar(){
+function copiar() {
   navigator.clipboard.writeText(document.getElementById("link").textContent);
-  document.getElementById("msg").style.display="block";
+  document.getElementById("msg").style.display = "block";
+  setTimeout(() => document.getElementById("msg").style.display = "none", 2500);
 }
 </script>
 </body>
