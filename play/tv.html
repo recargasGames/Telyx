@@ -53,18 +53,18 @@ async function cargarTodo() {
         return;
     }
 
-    // ✅ FUENTES COMPATIBLES, ESPAÑOL, MÍNIMAS REDIRECCIONES
+    // ✅ FUENTES LIMPIAS PARA SERIES
     const fuentes = [
-        `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${temp}&e=${epi}&lang=es&sub=1`,
-        `https://vidsrc.in/embed/tv?tmdb=${id}&s=${temp}&e=${epi}&lang=es`,
-        `https://embed.su/embed/tv/${id}/${temp}/${epi}?lang=es`,
-        `https://2embed.cc/embed/tv/${id}/${temp}/${epi}?lang=es`
+        `https://vidsrc.pm/embed/tv/${id}/${temp}/${epi}?lang=es`,
+        `https://vidsrc.me/embed/tv?tmdb=${id}&season=${temp}&episode=${epi}&lang=es`,
+        `https://vidplay.site/embed/tv/${id}/${temp}/${epi}?lang=es`,
+        `https://embedme.top/embed/tv/${id}/${temp}/${epi}?lang=es`
     ];
 
     let actual = 0;
     function probarFuente() {
         if (actual >= fuentes.length) {
-            document.getElementById("cajaReproductor").innerHTML = `<div class="estado">No hay fuente disponible</div>`;
+            document.getElementById("cajaReproductor").innerHTML = `<div class="estado">No hay reproductor disponible</div>`;
             return;
         }
         document.getElementById("cajaReproductor").innerHTML = `<iframe src="${fuentes[actual]}" allowfullscreen allow="encrypted-media; autoplay"></iframe>`;
