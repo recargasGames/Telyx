@@ -9,11 +9,11 @@
         body { background: #0a0e27; color: #ffffff; max-width: 960px; margin: 0 auto; padding: 20px; }
         h1 { color: #4499ff; font-size: 32px; margin-bottom: 5px; }
         .info { color: #88aaff; font-size: 18px; margin-bottom: 15px; }
-        .reproductor { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; margin: 20px 0; border: 2px solid #222b55; }
-        video { width: 100%; height: 100%; }
-        .entrada { width: 100%; padding: 14px; background: #151b40; border: 1px solid #2a3470; border-radius: 8px; color: #fff; font-size: 16px; }
+        .reproductor { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; margin: 20px 0; border: 2px solid #222b55; overflow: hidden; }
+        iframe, video { width: 100%; height: 100%; border: none; }
+        .entrada { width: 100%; padding: 14px; background: #151b40; border: 1px solid #2a3470; border-radius: 8px; color: #fff; font-size: 16px; margin-bottom: 20px; }
         h3 { margin: 25px 0 10px; font-size: 22px; }
-        p { color: #c9d2ff; line-height: 1.6; }
+        p { color: #c9d2ff; line-height: 1.6; text-align: justify; }
     </style>
 </head>
 <body>
@@ -21,61 +21,50 @@
     <h1 id="titulo">Cargando información...</h1>
     <p class="info" id="tempEp"></p>
     <div class="reproductor">
-        <video id="video" controls preload="metadata" allowfullscreen></video>
+        <iframe id="iframeVideo" allowfullscreen allow="autoplay; encrypted-media"></iframe>
     </div>
-    <input type="text" id="fuente" class="entrada" placeholder="Pega aquí tu enlace .mp4 / .m3u8 (opcional)">
+
+    <input type="text" id="fuente" class="entrada" placeholder="Opcional: Pega tu enlace .mp4 / .m3u8">
     <h3>Sinopsis</h3>
     <p id="sinopsis">Obteniendo datos de TMDb...</p>
 
 <script>
-// ✅ TU CLAVE PROPIA
 const API_KEY = "6196750b1fd09dd276a6106e75ee34f6";
 
-const ruta = window.location.pathname;
-const partes = ruta.split("/");
-let id, temp, epi;
+const partes = window.location.pathname.split("/");
+const id = partes[3];
+const temp = partes[4] || "1";
+const epi = partes[5] || "1";
 
-if (ruta.includes("/play/tv/")) {
-    id = partes[3];
-    temp = partes[4] || "1";
-    epi = partes[5] || "1";
-} else {
-    const params = new URLSearchParams(window.location.search);
-    id = params.get("id");
-    temp = params.get("t") || "1";
-    epi = params.get("e") || "1";
-}
-
-async function cargarDatos() {
+async function cargarTodo() {
     if (!id || isNaN(id)) {
-        document.getElementById("titulo").textContent = "Ingresa un ID válido";
-        document.getElementById("sinopsis").textContent = "Usa: /play/tv/12345/1/1 o ?id=12345&t=1&e=1";
+        document.getElementById("titulo").textContent = "ID no válido";
+        document.getElementById("sinopsis").textContent = "Usa: /play/tv/ID/TEMPORADA/EPISODIO";
         return;
     }
+
     try {
-        const respuesta = await fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${API_KEY}&language=es-ES`);
-        if (!respuesta.ok) throw new Error("Error en la consulta");
-        const datos = await respuesta.json();
-        
+        const res = await fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${API_KEY}&language=es-ES`);
+        const datos = await res.json();
         document.getElementById("titulo").textContent = datos.name;
         document.getElementById("tempEp").textContent = `Temporada ${temp} • Episodio ${epi}`;
         document.getElementById("sinopsis").textContent = datos.overview || "Sin sinopsis disponible.";
-    } catch (error) {
-        document.getElementById("titulo").textContent = "No se pudo cargar";
-        document.getElementById("sinopsis").textContent = "Verifica el ID o intenta más tarde.";
-        console.error(error);
+    } catch {
+        document.getElementById("titulo").textContent = "Error al cargar datos";
     }
+
+    // Reproducción automática para series
+    document.getElementById("iframeVideo").src = `https://vidsrc.xyz/embed/tv/${id}/${temp}/${epi}?lang=es`;
 }
 
 document.getElementById("fuente").addEventListener("input", () => {
     const enlace = document.getElementById("fuente").value.trim();
     if (enlace) {
-        document.getElementById("video").src = enlace;
-        document.getElementById("video").load();
+        document.querySelector(".reproductor").innerHTML = `<video src="${enlace}" controls preload="metadata" allowfullscreen></video>`;
     }
 });
 
-cargarDatos();
+cargarTodo();
 </script>
 
 </body>
