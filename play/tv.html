@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TELYX | Serie Automática</title>
+    <title>TELYX | Serie</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
         body { background: #0a0e27; color: #ffffff; max-width: 960px; margin: 0 auto; padding: 20px; }
@@ -17,58 +17,48 @@
     </style>
 </head>
 <body>
-
     <h1 id="titulo">Cargando...</h1>
     <p class="info" id="tempEp"></p>
-
     <div class="reproductor" id="cajaReproductor">
-        <div class="estado">Buscando episodio...</div>
+        <div class="estado">Buscando versión limpia en español...</div>
     </div>
-
     <h3>Sinopsis</h3>
-    <p id="sinopsis">Obteniendo datos de TMDb...</p>
+    <p id="sinopsis">Obteniendo datos...</p>
 
 <script>
 const API_KEY = "6196750b1fd09dd276a6106e75ee34f6";
-
 let id, temp, epi;
 const ruta = window.location.pathname;
-const parametros = new URLSearchParams(window.location.search);
-
-if (ruta.startsWith("/play/tv/") && ruta.split("/").length >= 6) {
+const params = new URLSearchParams(window.location.search);
+if (ruta.startsWith("/play/tv/")) {
     const partes = ruta.split("/");
-    id = partes[3];
-    temp = partes[4] || "1";
-    epi = partes[5] || "1";
-} else if (parametros.get("id")) {
-    id = parametros.get("id");
-    temp = parametros.get("t") || "1";
-    epi = parametros.get("e") || "1";
+    id = partes[3]; temp = partes[4]||"1"; epi = partes[5]||"1";
+} else if (params.get("id")) {
+    id = params.get("id"); temp = params.get("t")||"1"; epi = params.get("e")||"1";
 }
 
 async function cargarTodo() {
     if (!id || isNaN(id)) {
-        document.getElementById("titulo").textContent = "ID no válido";
-        document.getElementById("sinopsis").textContent = "Usa: ?id=123&t=1&e=1";
+        document.getElementById("titulo").textContent = "ID inválido";
         return;
     }
-
     try {
         const res = await fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${API_KEY}&language=es-ES`);
         const datos = await res.json();
         document.getElementById("titulo").textContent = datos.name;
         document.getElementById("tempEp").textContent = `Temporada ${temp} • Episodio ${epi}`;
-        document.getElementById("sinopsis").textContent = datos.overview || "Sin sinopsis disponible.";
+        document.getElementById("sinopsis").textContent = datos.overview || "Sin sinopsis";
     } catch {
         document.getElementById("titulo").textContent = "Error al cargar";
         return;
     }
 
+    // ✅ FUENTES MÁS LIMPIAS PARA SERIES
     const fuentes = [
-        `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${temp}&e=${epi}&lang=es`,
-        `https://vidsrc.me/embed/tv?tmdb=${id}&season=${temp}&episode=${epi}`,
-        `https://embed.su/embed/tv/${id}/${temp}/${epi}`,
-        `https://vidplay.online/embed/tv/${id}/${temp}/${epi}`
+        `https://vidbinge.dev/embed/tv/${id}/${temp}/${epi}?lang=es`,
+        `https://embed.su/embed/tv/${id}/${temp}/${epi}?lang=es`,
+        `https://player.vidsrc.nl/embed/tv/${id}/${temp}/${epi}?lang=es`,
+        `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${temp}&e=${epi}&lang=es&sub_es=1&ads=0`
     ];
 
     let actual = 0;
@@ -77,15 +67,12 @@ async function cargarTodo() {
             document.getElementById("cajaReproductor").innerHTML = `<div class="estado">No hay fuente disponible</div>`;
             return;
         }
-        document.getElementById("cajaReproductor").innerHTML = `<iframe src="${fuentes[actual]}" allowfullscreen allow="encrypted-media"></iframe>`;
+        document.getElementById("cajaReproductor").innerHTML = `<iframe src="${fuentes[actual]}" allowfullscreen allow="encrypted-media; autoplay" sandbox="allow-same-origin allow-scripts allow-forms allow-popups"></iframe>`;
         actual++;
     }
-
     probar();
 }
-
 cargarTodo();
 </script>
-
 </body>
 </html>
