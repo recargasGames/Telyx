@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TELYX | Ver Serie</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+        body { background: #0a0e27; color: #ffffff; max-width: 960px; margin: 0 auto; padding: 20px; }
+
+        h1 { color: #4499ff; font-size: 38px; margin-bottom: 5px; }
+        .subtitulo { font-size: 18px; color: #88aaff; margin-bottom: 15px; }
+        .info-cap { font-size: 20px; color: #e0e6ff; margin-bottom: 25px; }
+
+        .reproductor-contenedor {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            border: 2px solid #222b55;
+        }
+        video { width: 100%; height: 100%; background: #000; }
+
+        .etiquetas { display: flex; gap: 12px; margin-bottom: 25px; flex-wrap: wrap; }
+        .tag {
+            background: #151b40;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 15px;
+            border: 1px solid #2a3470;
+        }
+
+        h3 { font-size: 24px; margin-bottom: 12px; color: #ffffff; }
+        #sinopsis { font-size: 17px; line-height: 1.6; color: #c9d2ff; margin-bottom: 25px; }
+
+        .entrada {
+            width: 100%;
+            padding: 14px;
+            background: #151b40;
+            border: 1px solid #2a3470;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1 id="titulo">Ver Serie en Línea</h1>
+    <p class="info-cap" id="tempEp"></p>
+    <p class="subtitulo">Disfruta del mejor contenido en español latino.</p>
+
+    <div class="reproductor-contenedor">
+        <video id="video" controls preload="metadata" allowfullscreen>
+            Tu navegador no soporta reproducción de video.
+        </video>
+    </div>
+
+    <div class="etiquetas">
+        <span class="tag">HD</span>
+        <span class="tag">Temporada</span>
+        <span class="tag">Latino</span>
+    </div>
+
+    <h3>Sinopsis</h3>
+    <p id="sinopsis">Cargando información...</p>
+
+    <input type="text" id="fuente" class="entrada" placeholder="Pega aquí tu enlace .mp4 / .m3u8">
+
+<script>
+const API_KEY = "86694f7126511f241254f76f60820528";
+const partes = window.location.pathname.split("/");
+const idTmdb = partes[3];
+const temp = partes[4] || 1;
+const epi = partes[5] || 1;
+
+async function cargarInfo() {
+    try {
+        const res = await fetch(`https://api.themoviedb.org/3/tv/${idTmdb}?api_key=${API_KEY}&language=es-ES`);
+        const datos = await res.json();
+        if (datos.success === false) throw new Error();
+
+        document.getElementById("titulo").textContent = datos.name;
+        document.getElementById("tempEp").textContent = `Temporada ${temp} • Episodio ${epi}`;
+        document.getElementById("sinopsis").textContent = datos.overview || "Sin sinopsis disponible.";
+    } catch {
+        document.getElementById("titulo").textContent = "Serie no encontrada";
+        document.getElementById("sinopsis").textContent = "Verifica que el ID de TMDb sea correcto.";
+    }
+}
+
+document.getElementById("fuente").addEventListener("input", () => {
+    const url = document.getElementById("fuente").value.trim();
+    if (url) document.getElementById("video").src = url;
+});
+
+cargarInfo();
+</script>
+
+</body>
+</html>
+
