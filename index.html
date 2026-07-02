@@ -3,41 +3,41 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TELYX | Reproductor Automático</title>
+  <title>TELYX - Generador Automático</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
     body { background: #0a0e27; color: #ffffff; max-width: 960px; margin: 0 auto; padding: 20px; }
     h1 { text-align: center; color: #4499ff; margin-bottom: 25px; font-size: 30px; }
     .input-group { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
     select, input { padding: 12px; border: 2px solid #222b55; border-radius: 6px; background: #151b40; color: #fff; font-size: 16px; flex: 1; min-width: 120px; }
-    button { padding: 12px 20px; border: none; border-radius: 6px; background: #4499ff; color: #000; font-weight: bold; cursor: pointer; font-size: 16px; }
     #enlaceZona { background: #151b40; padding: 15px; border-radius: 8px; margin-bottom: 25px; display: none; }
     .enlace { color: #4499ff; word-break: break-all; font-weight: bold; margin: 10px 0; display: block; font-size: 15px; }
     .copiado { color: #2ecc71; margin-top: 8px; display: none; }
     .reproductor { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; margin: 20px 0; border: 2px solid #222b55; overflow: hidden; display: none; }
     iframe { width: 100%; height: 100%; border: none; }
     .info { margin-top: 20px; line-height: 1.6; color: #c9d2ff; }
+    .aviso { color: #888; font-size: 14px; margin-top: 5px; }
   </style>
 </head>
 <body>
 
-  <h1>🎬 TELYX - Generador & Reproductor</h1>
+  <h1>🎬 TELYX - Enlace & Reproductor Automático</h1>
 
   <div class="input-group">
     <select id="tipo">
       <option value="movie">Película</option>
       <option value="tv">Serie</option>
     </select>
-    <input type="number" id="id" placeholder="ID de TMDb ej: 502356" required>
-    <input type="number" id="temp" placeholder="Temp" style="width: 48%; display: none;">
-    <input type="number" id="epi" placeholder="Ep" style="width: 48%; display: none;">
-    <button onclick="generarYReproducir()">Generar y Ver</button>
+    <input type="number" id="id" placeholder="Escribe ID de TMDb ej: 502356" required>
+    <input type="number" id="temp" placeholder="Temporada" style="width: 48%; display: none;">
+    <input type="number" id="epi" placeholder="Episodio" style="width: 48%; display: none;">
   </div>
+  <div class="aviso">👉 Solo escribe el ID y se genera solo</div>
 
   <div id="enlaceZona">
     <p>🔗 Enlace listo para compartir:</p>
     <a id="enlace" class="enlace" target="_blank"></a>
-    <button onclick="copiarEnlace()">Copiar enlace</button>
+    <button onclick="copiarEnlace()" style="padding:8px 15px; background:#2ecc71; border:none; border-radius:4px; color:#000; font-weight:bold; cursor:pointer;">Copiar enlace</button>
     <p id="mensajeCopiado" class="copiado">✅ Copiado correctamente</p>
   </div>
 
@@ -51,22 +51,22 @@
 const DOMINIO = "https://telyx.vercel.app";
 const API_KEY = "6196750b1fd09dd276a6106e75ee34f6";
 
-// Mostrar campos de temporada/episodio solo si es serie
-document.getElementById("tipo").addEventListener("change", () => {
-  const esSerie = document.getElementById("tipo").value === "tv";
-  document.getElementById("temp").style.display = esSerie ? "inline-block" : "none";
-  document.getElementById("epi").style.display = esSerie ? "inline-block" : "none";
-});
+// Mostrar/ocultar temporada/episodio
+document.getElementById("tipo").addEventListener("change", actualizarAutomatico);
+document.getElementById("id").addEventListener("input", actualizarAutomatico);
+document.getElementById("temp").addEventListener("input", actualizarAutomatico);
+document.getElementById("epi").addEventListener("input", actualizarAutomatico);
 
-// Genera enlace y carga el reproductor al mismo tiempo
-async function generarYReproducir() {
+// ✅ FUNCIÓN PRINCIPAL: se ejecuta en cuanto cambia cualquier campo
+function actualizarAutomatico() {
   const tipo = document.getElementById("tipo").value;
   const id = document.getElementById("id").value.trim();
   const temp = document.getElementById("temp").value || "1";
   const epi = document.getElementById("epi").value || "1";
 
-  if (!id || isNaN(id)) {
-    alert("⚠️ Ingresa un ID válido numérico");
+  // Solo si el ID es válido
+  if (!id || isNaN(id) || id.length < 5) {
+    ocultarTodo();
     return;
   }
 
@@ -79,42 +79,41 @@ async function generarYReproducir() {
     fuenteVideo = `https://vidsrc.me/embed/tv?tmdb=${id}&season=${temp}&episode=${epi}`;
   }
 
-  // Mostrar enlace
+  // Mostrar y actualizar todo
   document.getElementById("enlace").textContent = urlEnlace;
   document.getElementById("enlace").href = urlEnlace;
   document.getElementById("enlaceZona").style.display = "block";
 
-  // Cargar reproductor
   document.getElementById("videoFrame").src = fuenteVideo;
   document.getElementById("reproductorZona").style.display = "block";
 
-  // Cargar sinopsis y título desde TMDb
-  cargarDatosTMDB(tipo, id, temp, epi);
+  cargarDatosTMDB(tipo, id);
 }
 
-// Función para copiar el enlace
+function ocultarTodo() {
+  document.getElementById("enlaceZona").style.display = "none";
+  document.getElementById("reproductorZona").style.display = "none";
+  document.getElementById("infoPelicula").innerHTML = "";
+}
+
 function copiarEnlace() {
-  const enlace = document.getElementById("enlace").textContent;
-  navigator.clipboard.writeText(enlace);
+  navigator.clipboard.writeText(document.getElementById("enlace").textContent);
   const msg = document.getElementById("mensajeCopiado");
   msg.style.display = "block";
-  setTimeout(() => msg.style.display = "none", 2500);
+  setTimeout(() => msg.style.display = "none", 2000);
 }
 
-// Cargar datos de TMDb
-async function cargarDatosTMDB(tipo, id, temp, epi) {
+async function cargarDatosTMDB(tipo, id) {
   try {
-    const endpoint = tipo === "movie" ? `movie/${id}` : `tv/${id}`;
-    const res = await fetch(`https://api.themoviedb.org/3/${endpoint}?api_key=${API_KEY}&language=es-ES`);
+    const end = tipo === "movie" ? `movie/${id}` : `tv/${id}`;
+    const res = await fetch(`https://api.themoviedb.org/3/${end}?api_key=${API_KEY}&language=es-ES`);
     const datos = await res.json();
-
-    let texto = `<h3 style="color:#e0e8ff; margin:15px 0 8px;">${datos.title || datos.name}</h3>`;
-    if (tipo === "tv") texto += `<p style="color:#88aaff;">Temporada ${temp} • Episodio ${epi}</p>`;
-    texto += `<p>${datos.overview || "Sin sinopsis disponible."}</p>`;
-
-    document.getElementById("infoPelicula").innerHTML = texto;
+    document.getElementById("infoPelicula").innerHTML = `
+      <h3 style="color:#e0e8ff; margin:15px 0 8px;">${datos.title || datos.name}</h3>
+      <p style="color:#c9d2ff; line-height:1.6;">${datos.overview || "Sin sinopsis disponible."}</p>
+    `;
   } catch {
-    document.getElementById("infoPelicula").innerHTML = `<p>No se pudo cargar la información.</p>`;
+    document.getElementById("infoPelicula").innerHTML = "";
   }
 }
 </script>
