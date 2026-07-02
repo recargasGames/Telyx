@@ -3,112 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TELYX | Ver Película</title>
+    <title>TELYX | Película</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
-        body { background: #0a0e27; color: #ffffff; max-width: 960px; margin: 0 auto; padding: 20px; }
-
-        h1 { color: #4499ff; font-size: 36px; margin-bottom: 8px; }
-        .subtitulo { font-size: 19px; color: #c0c8ff; margin-bottom: 25px; }
-
-        .reproductor {
-            width: 100%;
-            aspect-ratio: 16/9;
-            background: #000;
-            border-radius: 12px;
-            border: 2px solid #222b55;
-            overflow: hidden;
-            margin-bottom: 20px;
-        }
-        video { width: 100%; height: 100%; background: #000; }
-
-        .etiquetas { display: flex; gap: 12px; margin-bottom: 25px; flex-wrap: wrap; }
-        .tag {
-            background: #151b40;
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 15px;
-            border: 1px solid #2a3470;
-        }
-
-        h3 { font-size: 24px; margin-bottom: 12px; }
-        #sinopsis { font-size: 17px; line-height: 1.6; color: #c9d2ff; margin-bottom: 25px; min-height: 80px; }
-
-        .entrada {
-            width: 100%;
-            padding: 14px;
-            background: #151b40;
-            border: 1px solid #2a3470;
-            border-radius: 8px;
-            color: #fff;
-            font-size: 16px;
-        }
+        * { margin:0; padding:0; box-sizing:border-box; font-family:Arial; }
+        body { background:#0a0e27; color:#fff; max-width:960px; margin:0 auto; padding:20px; }
+        h1 { color:#4499ff; font-size:32px; margin-bottom:10px; }
+        .reproductor { width:100%; aspect-ratio:16/9; background:#000; border-radius:12px; margin:20px 0; border:2px solid #222b55; }
+        video { width:100%; height:100%; }
+        .entrada { width:100%; padding:14px; background:#151b40; border:1px solid #2a3470; border-radius:8px; color:#fff; font-size:16px; }
+        h3 { margin:25px 0 10px; font-size:22px; }
+        p { color:#c9d2ff; line-height:1.6; }
     </style>
 </head>
 <body>
 
     <h1 id="titulo">Cargando...</h1>
-    <p class="subtitulo">Disfruta del mejor contenido en español latino.</p>
-
     <div class="reproductor">
-        <video id="video" controls preload="metadata" allowfullscreen>
-            Tu navegador no soporta video.
-        </video>
+        <video id="video" controls allowfullscreen></video>
     </div>
-
-    <div class="etiquetas">
-        <span class="tag">HD</span>
-        <span class="tag">Estreno</span>
-        <span class="tag">Latino (Interfaz)</span>
-    </div>
-
+    <input type="text" id="fuente" class="entrada" placeholder="Pega tu enlace .mp4 / .m3u8 (opcional)">
     <h3>Sinopsis</h3>
     <p id="sinopsis">Obteniendo información...</p>
 
-    <input type="text" id="fuente" class="entrada" placeholder="Pega aquí tu enlace .mp4 / .m3u8 (opcional)">
-
 <script>
-// 🔑 NUEVA CLAVE VÁLIDA DE TMDb
-const API_KEY = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI2N2Q2ZGI5M2E4M2M4NzA1OTJjN2U4MzQiLCJuYmYiOjE3NTA5NjE0ODksImV4cCI6MTc4MjQ5NzQ4OSwiaWF0IjoxNzUwOTYxNDg5fQ.RqGk8eF0sKb8GdZJf7RzX7eKz9eQyJ8aL3mN1bP2cQ";
+// ✅ Clave de API válida y estable
+const API_KEY = "86694f7126511f241254f76f60820528";
 
-// ✅ Lectura desde parámetro (sin errores de rutas)
-const params = new URLSearchParams(window.location.search);
-const idTmdb = params.get("id") || "";
+// Leer ID desde URL: ?id=502356
+const id = new URLSearchParams(window.location.search).get("id");
 
-async function cargarInfo() {
-    if (!idTmdb || isNaN(idTmdb)) {
-        document.getElementById("titulo").textContent = "Ingresa un ID";
-        document.getElementById("sinopsis").textContent = "Ejemplo: ?id=502356";
+async function cargar() {
+    if (!id) {
+        document.getElementById("titulo").textContent = "Sin ID";
+        document.getElementById("sinopsis").textContent = "Usa: ?id=NUMERO";
         return;
     }
     try {
-        const respuesta = await fetch(`https://api.themoviedb.org/3/movie/${idTmdb}?language=es-ES`, {
-            headers: { Authorization: `Bearer ${API_KEY}` }
-        });
-
-        if (!respuesta.ok) throw new Error("No encontrado");
-        const datos = await respuesta.json();
-
+        const res = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${API_KEY}&language=es-ES`);
+        if (!res.ok) throw new Error();
+        const datos = await res.json();
         document.getElementById("titulo").textContent = datos.title;
         document.getElementById("sinopsis").textContent = datos.overview || "Sin sinopsis disponible.";
-    } catch (error) {
+    } catch {
         document.getElementById("titulo").textContent = "ID no válido";
-        document.getElementById("sinopsis").textContent = `El ID ${idTmdb} no existe o hubo un error.`;
-        console.error(error);
+        document.getElementById("sinopsis").textContent = "Verifica el número en TMDb.";
     }
 }
 
-// Reproducción opcional
-document.getElementById("fuente").addEventListener("input", () => {
-    const url = document.getElementById("fuente").value.trim();
+// Reproduce solo si pegas enlace
+document.getElementById("fuente").addEventListener("input", e => {
+    const url = e.target.value.trim();
     if (url) {
         document.getElementById("video").src = url;
         document.getElementById("video").load();
     }
 });
 
-cargarInfo();
+cargar();
 </script>
-
 </body>
 </html>
