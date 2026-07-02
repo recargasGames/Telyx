@@ -69,11 +69,11 @@ function actualizarTodo() {
   let urlEnlace, fuenteVideo;
   if (tipo === "movie") {
     urlEnlace = `${DOMINIO}/play/movie/${id}`;
-    // ✅ FUENTES CON ESPAÑOL FORZADO
-    fuenteVideo = `https://multiembed.mov/?video_id=${id}&tmdb=1&lang=es&sub_es=1&ads=0`;
+    // ✅ MISMA FUENTE ORIGINAL DE ONLYPLAY / UNLIMPLAY
+    fuenteVideo = `https://multiembed.mov/?video_id=${id}&tmdb=1&lang=es&sub=es`;
   } else {
     urlEnlace = `${DOMINIO}/play/tv/${id}/${temp}/${epi}`;
-    fuenteVideo = `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${temp}&e=${epi}&lang=es&sub_es=1&ads=0`;
+    fuenteVideo = `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${temp}&e=${epi}&lang=es&sub=es`;
   }
 
   document.getElementById("enlace").textContent = urlEnlace;
