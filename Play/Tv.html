@@ -3,11 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TELY-XI | Ver Película</title>
+  <title>TELYX | Ver Serie</title>
   <style>
     *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
     body{background:#000;color:#fff;max-width:960px;margin:0 auto;padding:20px}
-    h2{color:#01b4e4;margin-bottom:15px}
+    h2{color:#01b4e4;margin-bottom:5px}
+    .info{color:#aaa;margin-bottom:15px}
     .reproductor{width:100%;aspect-ratio:16/9;background:#111;border-radius:8px;overflow:hidden;margin-bottom:20px}
     video{width:100%;height:100%}
     .entrada{width:100%;padding:12px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#fff;margin-bottom:10px}
@@ -16,6 +17,7 @@
 </head>
 <body>
   <h2 id="titulo">Cargando...</h2>
+  <p class="info" id="tempEp"></p>
   <div class="reproductor">
     <video id="video" controls preload="metadata">
       Tu navegador no soporta reproducción de video
@@ -26,13 +28,17 @@
 
 <script>
 const API_KEY = "86694f7126511f241254f76f60820528";
-const id = window.location.pathname.split("/")[3];
+const partes = window.location.pathname.split("/");
+const id = partes[3];
+const temp = partes[4] || 1;
+const epi = partes[5] || 1;
 
 async function cargarDatos() {
   try {
-    const res = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${API_KEY}&language=es`);
+    const res = await fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${API_KEY}&language=es`);
     const datos = await res.json();
-    document.getElementById("titulo").textContent = datos.title || "Sin título";
+    document.getElementById("titulo").textContent = datos.name || "Sin título";
+    document.getElementById("tempEp").textContent = `Temporada ${temp} • Episodio ${epi}`;
   } catch {
     document.getElementById("titulo").textContent = "ID no válido";
   }
@@ -48,4 +54,3 @@ cargarDatos();
 </script>
 </body>
 </html>
-
