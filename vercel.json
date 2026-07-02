@@ -1,0 +1,7 @@
+{
+  "rewrites": [
+    {"source": "/play/movie/:id", "destination": "/play/movie.html"},
+    {"source": "/play/tv/:id/:temp/:epi", "destination": "/play/tv.html"}
+  ]
+}
+
