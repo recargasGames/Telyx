@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TELYX | Reproducir</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+        body { background: #0a0e27; color: #ffffff; max-width: 960px; margin: 0 auto; padding: 20px; }
+        h1 { color: #4499ff; font-size: 32px; margin-bottom: 20px; text-align: center; }
+        .reproductor { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; border: 2px solid #222b55; }
+        video { width: 100%; height: 100%; border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Reproducción</h1>
+    <div class="reproductor">
+        <video id="video" controls preload="metadata" allowfullscreen>
+            Cargando video...
+        </video>
+    </div>
+
+<script>
+// Aquí guardamos los enlaces cortos en memoria
+const baseEnlaces = {
+  // Se van agregando automáticamente al generar
+};
+
+const codigo = window.location.pathname.split("/")[2];
+const enlaceOriginal = Object.keys(baseEnlaces).find(k => btoa(k).replace(/[^a-zA-Z0-9]/g, "").slice(0,10) === codigo);
+
+if (enlaceOriginal) {
+  document.getElementById("video").src = enlaceOriginal;
+  document.getElementById("video").load();
+} else {
+  document.querySelector("h1").textContent = "Enlace no válido";
+  document.querySelector(".reproductor").innerHTML = "<p style='text-align:center;padding:40px'>Este enlace no existe o ha caducado</p>";
+}
+</script>
+</body>
+</html>
+
