@@ -18,42 +18,53 @@
 </head>
 <body>
 
-    <h1 id="titulo">Cargando información...</h1>
+    <h1 id="titulo">Cargando...</h1>
     <p class="info" id="tempEp"></p>
     <div class="reproductor">
         <iframe id="iframeVideo" allowfullscreen allow="autoplay; encrypted-media"></iframe>
     </div>
-
     <input type="text" id="fuente" class="entrada" placeholder="Opcional: Pega tu enlace .mp4 / .m3u8">
     <h3>Sinopsis</h3>
-    <p id="sinopsis">Obteniendo datos de TMDb...</p>
+    <p id="sinopsis">Obteniendo datos...</p>
 
 <script>
 const API_KEY = "6196750b1fd09dd276a6106e75ee34f6";
 
-const partes = window.location.pathname.split("/");
-const id = partes[3];
-const temp = partes[4] || "1";
-const epi = partes[5] || "1";
+let id, temp, epi;
+const ruta = window.location.pathname;
+const params = new URLSearchParams(window.location.search);
+
+if (ruta.startsWith("/play/tv/") && ruta.split("/").length >= 6) {
+    const partes = ruta.split("/");
+    id = partes[3];
+    temp = partes[4] || "1";
+    epi = partes[5] || "1";
+} else if (params.get("id")) {
+    id = params.get("id");
+    temp = params.get("t") || "1";
+    epi = params.get("e") || "1";
+}
 
 async function cargarTodo() {
     if (!id || isNaN(id)) {
         document.getElementById("titulo").textContent = "ID no válido";
-        document.getElementById("sinopsis").textContent = "Usa: /play/tv/ID/TEMPORADA/EPISODIO";
+        document.getElementById("sinopsis").textContent = "Usa: /play/tv/ID/T/E o ?id=ID&t=1&e=1";
         return;
     }
 
     try {
         const res = await fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${API_KEY}&language=es-ES`);
+        if (!res.ok) throw new Error();
         const datos = await res.json();
         document.getElementById("titulo").textContent = datos.name;
         document.getElementById("tempEp").textContent = `Temporada ${temp} • Episodio ${epi}`;
         document.getElementById("sinopsis").textContent = datos.overview || "Sin sinopsis disponible.";
     } catch {
-        document.getElementById("titulo").textContent = "Error al cargar datos";
+        document.getElementById("titulo").textContent = "ID no existe";
+        document.getElementById("sinopsis").textContent = "Verifica el número en TMDb.";
+        return;
     }
 
-    // Reproducción automática para series
     document.getElementById("iframeVideo").src = `https://vidsrc.xyz/embed/tv/${id}/${temp}/${epi}?lang=es`;
 }
 
