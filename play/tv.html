@@ -68,38 +68,33 @@
     <h3>Sinopsis</h3>
     <p id="sinopsis">Obteniendo información...</p>
 
-    <input type="text" id="fuente" class="entrada" placeholder="Pega aquí tu enlace .mp4 / .m3u8">
+    <input type="text" id="fuente" class="entrada" placeholder="Pega aquí tu enlace .mp4 / .m3u8 (opcional)">
 
 <script>
 const API_KEY = "86694f7126511f241254f76f60820528";
 
-// ✅ LECTURA SEGURA
-const ruta = window.location.pathname;
-const coincidencia = ruta.match(/\/play\/tv\/(\d+)(?:\/(\d+))?(?:\/(\d+))?/);
-let idTmdb = "", temp = "1", epi = "1";
-if (coincidencia) {
-    idTmdb = coincidencia[1];
-    if (coincidencia[2]) temp = coincidencia[2];
-    if (coincidencia[3]) epi = coincidencia[3];
-}
+const params = new URLSearchParams(window.location.search);
+const idTmdb = params.get("id") || "";
+const temp = params.get("t") || "1";
+const epi = params.get("e") || "1";
 
 async function cargarInfo() {
-    if (!idTmdb) {
-        document.getElementById("titulo").textContent = "Falta el ID";
-        document.getElementById("sinopsis").textContent = "Usa: /play/tv/ID/TEMP/EPI";
+    if (!idTmdb || isNaN(idTmdb)) {
+        document.getElementById("titulo").textContent = "Ingresa un ID";
+        document.getElementById("sinopsis").textContent = "Usa: ?id=12345&t=1&e=1";
         return;
     }
     try {
-        const res = await fetch(`https://api.themoviedb.org/3/tv/${idTmdb}?api_key=${API_KEY}&language=es-ES`);
+        const res = await fetch(`https://api.themoviedb.org/3/tv/${idTmdb}?api_key=${API_KEY}&language=es`);
+        if (!res.ok) throw new Error("No encontrado");
         const datos = await res.json();
-        if (!datos || datos.success === false) throw new Error();
 
         document.getElementById("titulo").textContent = datos.name;
         document.getElementById("tempEp").textContent = `Temporada ${temp} • Episodio ${epi}`;
         document.getElementById("sinopsis").textContent = datos.overview || "Sin sinopsis disponible.";
     } catch {
         document.getElementById("titulo").textContent = "ID no válido";
-        document.getElementById("sinopsis").textContent = "Verifica el ID de TMDb.";
+        document.getElementById("sinopsis").textContent = `El ID ${idTmdb} no existe en TMDb.`;
     }
 }
 
