@@ -5,61 +5,68 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TELYX | Película</title>
     <style>
-        * { margin:0; padding:0; box-sizing:border-box; font-family:Arial; }
-        body { background:#0a0e27; color:#fff; max-width:960px; margin:0 auto; padding:20px; }
-        h1 { color:#4499ff; font-size:32px; margin-bottom:10px; }
-        .reproductor { width:100%; aspect-ratio:16/9; background:#000; border-radius:12px; margin:20px 0; border:2px solid #222b55; }
-        video { width:100%; height:100%; }
-        .entrada { width:100%; padding:14px; background:#151b40; border:1px solid #2a3470; border-radius:8px; color:#fff; font-size:16px; }
-        h3 { margin:25px 0 10px; font-size:22px; }
-        p { color:#c9d2ff; line-height:1.6; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+        body { background: #0a0e27; color: #ffffff; max-width: 960px; margin: 0 auto; padding: 20px; }
+
+        h1 { color: #4499ff; font-size: 32px; margin-bottom: 10px; }
+        .info { color: #c0c8ff; font-size: 18px; margin-bottom: 20px; }
+
+        .reproductor {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #000;
+            border-radius: 12px;
+            border: 2px solid #222b55;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        video { width: 100%; height: 100%; background: #000; }
+
+        .entrada {
+            width: 100%;
+            padding: 14px;
+            background: #151b40;
+            border: 1px solid #2a3470;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 16px;
+            margin-bottom: 25px;
+        }
+
+        h3 { font-size: 22px; margin-bottom: 10px; }
+        p { color: #c9d2ff; line-height: 1.6; }
     </style>
 </head>
 <body>
 
-    <h1 id="titulo">Cargando...</h1>
+    <!-- TÚ CAMBIAS ESTO A MANO SI QUIERES, O DEJALO ASÍ -->
+    <h1>Título de la película</h1>
+    <p class="info">Disponible en calidad HD | Español Latino</p>
+
     <div class="reproductor">
-        <video id="video" controls allowfullscreen></video>
+        <video id="video" controls preload="metadata" allowfullscreen>
+            Tu navegador no soporta reproducción de video.
+        </video>
     </div>
-    <input type="text" id="fuente" class="entrada" placeholder="Pega tu enlace .mp4 / .m3u8 (opcional)">
+
+    <input type="text" id="fuente" class="entrada" placeholder="👉 Pega aquí tu enlace .mp4 o .m3u8">
+
     <h3>Sinopsis</h3>
-    <p id="sinopsis">Obteniendo información...</p>
+    <p>Esta plataforma es tuya. Solo tienes que pegar el enlace de tu video arriba y se reproducirá automáticamente. No necesitas agregar nada más para que funcione.</p>
 
 <script>
-// ✅ Clave de API válida y estable
-const API_KEY = "86694f7126511f241254f76f60820528";
+    // 🎯 Reproducción directa, sin fallos
+    const campo = document.getElementById("fuente");
+    const video = document.getElementById("video");
 
-// Leer ID desde URL: ?id=502356
-const id = new URLSearchParams(window.location.search).get("id");
-
-async function cargar() {
-    if (!id) {
-        document.getElementById("titulo").textContent = "Sin ID";
-        document.getElementById("sinopsis").textContent = "Usa: ?id=NUMERO";
-        return;
-    }
-    try {
-        const res = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${API_KEY}&language=es-ES`);
-        if (!res.ok) throw new Error();
-        const datos = await res.json();
-        document.getElementById("titulo").textContent = datos.title;
-        document.getElementById("sinopsis").textContent = datos.overview || "Sin sinopsis disponible.";
-    } catch {
-        document.getElementById("titulo").textContent = "ID no válido";
-        document.getElementById("sinopsis").textContent = "Verifica el número en TMDb.";
-    }
-}
-
-// Reproduce solo si pegas enlace
-document.getElementById("fuente").addEventListener("input", e => {
-    const url = e.target.value.trim();
-    if (url) {
-        document.getElementById("video").src = url;
-        document.getElementById("video").load();
-    }
-});
-
-cargar();
+    campo.addEventListener("input", () => {
+        const enlace = campo.value.trim();
+        if (enlace) {
+            video.src = enlace;
+            video.load();
+        }
+    });
 </script>
+
 </body>
 </html>
