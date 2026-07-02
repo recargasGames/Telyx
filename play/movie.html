@@ -10,62 +10,47 @@
         h1 { color: #4499ff; font-size: 32px; margin-bottom: 10px; }
         .reproductor { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; margin: 20px 0; border: 2px solid #222b55; overflow: hidden; }
         iframe { width: 100%; height: 100%; border: none; }
-        .estado { color: #c0c8ff; text-align: center; padding: 40px; font-size: 17px; }
         h3 { margin: 25px 0 10px; font-size: 22px; color: #e0e8ff; }
         p { color: #c9d2ff; line-height: 1.7; text-align: justify; font-size: 16px; }
     </style>
 </head>
 <body>
+
     <h1 id="titulo">Cargando...</h1>
-    <div class="reproductor" id="cajaReproductor">
-        <div class="estado">Cargando reproductor limpio...</div>
+
+    <div class="reproductor">
+        <iframe id="videoFrame" allowfullscreen allow="encrypted-media; autoplay"></iframe>
     </div>
+
     <h3>Sinopsis</h3>
     <p id="sinopsis">Obteniendo datos...</p>
 
 <script>
 const API_KEY = "6196750b1fd09dd276a6106e75ee34f6";
-let id;
 const ruta = window.location.pathname;
-const params = new URLSearchParams(window.location.search);
-if (ruta.startsWith("/play/movie/")) id = ruta.split("/")[3];
-else if (params.get("id")) id = params.get("id");
+const id = ruta.split("/")[3];
 
 async function cargarTodo() {
-    if (!id || isNaN(id)) {
-        document.getElementById("titulo").textContent = "ID inválido";
-        return;
-    }
-    try {
-        const res = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${API_KEY}&language=es-ES`);
-        const datos = await res.json();
-        document.getElementById("titulo").textContent = datos.title;
-        document.getElementById("sinopsis").textContent = datos.overview || "Sin sinopsis disponible";
-    } catch {
-        document.getElementById("titulo").textContent = "Error al cargar datos";
-        return;
-    }
+  if (!id || isNaN(id)) {
+    document.getElementById("titulo").textContent = "ID no válido";
+    document.getElementById("sinopsis").textContent = "Usa un enlace correcto";
+    return;
+  }
 
-    // ✅ SOLO FUENTES LIMPIAS, MENOS ANUNCIOS Y REDIRECCIONES
-    const fuentes = [
-        `https://vidsrc.pm/embed/movie/${id}?lang=es`,
-        `https://vidsrc.me/embed/movie?tmdb=${id}&lang=es`,
-        `https://vidplay.site/embed/movie/${id}?lang=es`,
-        `https://embedme.top/embed/movie/${id}?lang=es`
-    ];
+  try {
+    const res = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${API_KEY}&language=es-ES`);
+    const datos = await res.json();
+    document.getElementById("titulo").textContent = datos.title;
+    document.getElementById("sinopsis").textContent = datos.overview || "Sin sinopsis disponible";
+  } catch {
+    document.getElementById("titulo").textContent = "Error al cargar";
+  }
 
-    let actual = 0;
-    function probarFuente() {
-        if (actual >= fuentes.length) {
-            document.getElementById("cajaReproductor").innerHTML = `<div class="estado">No hay reproductor disponible</div>`;
-            return;
-        }
-        document.getElementById("cajaReproductor").innerHTML = `<iframe src="${fuentes[actual]}" allowfullscreen allow="encrypted-media; autoplay"></iframe>`;
-        actual++;
-    }
-    probarFuente();
+  // Fuente igual a Unlimplay
+  document.getElementById("videoFrame").src = `https://vidsrc.me/embed/movie?tmdb=${id}`;
 }
 cargarTodo();
 </script>
+
 </body>
 </html>
