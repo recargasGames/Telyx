@@ -5,37 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TELIVERSET - Reproduciendo</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
-    body { background: #0a0e27; color: #fff; max-width: 960px; margin: 0 auto; padding: 20px; text-align: center; }
-    h1 { color: #4499ff; margin-bottom: 25px; }
-    .reproductor { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; margin: 20px auto; overflow: hidden; }
-    video { width: 100%; height: 100%; border: none; }
-    .aviso { color: #c9d2ff; margin-top: 20px; }
+    * { margin:0; padding:0; box-sizing:border-box; font-family:Arial,sans-serif; }
+    body { background:#0a0e27; color:#fff; max-width:960px; margin:0 auto; padding:20px; text-align:center; }
+    h1 { color:#4499ff; margin-bottom:25px; }
+    .reproductor { width:100%; aspect-ratio:16/9; background:#000; border-radius:12px; margin:20px auto; overflow:hidden; }
+    video { width:100%; height:100%; border:none; }
   </style>
 </head>
 <body>
   <h1>🌌 TELIVERSET</h1>
   <div class="reproductor">
-    <video id="video" controls controlsList="nodownload" allowfullscreen>
-      Tu navegador no soporta la reproducción de video
-    </video>
+    <video id="video" controls allowfullscreen>Tu navegador no soporta el video</video>
   </div>
-  <p class="aviso">Reproducción en alta calidad • TELIVERSET</p>
-
 <script>
-// Obtener el ID único de la URL
-const partes = window.location.pathname.split("/");
-const id = partes[2];
-
-// ⚠️ Nota: Para que funcione en Vercel con archivos subidos,
-// en esta versión básica guardamos la referencia en memoria temporal.
-// Para enlaces externos directos funciona perfecto.
-
-// Ejemplo: si usas enlaces directos, aquí iría la lógica para cargarlo
-if (!id) {
-  document.querySelector("h1").textContent = "Enlace no válido";
-}
+const id = window.location.pathname.split("/")[2];
+const videos = JSON.parse(localStorage.getItem("videosTeliverset") || "{}");
+if (videos[id]) document.getElementById("video").src = videos[id];
+else document.querySelector("h1").textContent = "Enlace no válido";
 </script>
 </body>
 </html>
-
