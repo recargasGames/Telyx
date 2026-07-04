@@ -3,112 +3,97 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TELYX - Automático</title>
+  <title>TELIVERSET - Generador de Enlaces</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
     body { background: #0a0e27; color: #ffffff; max-width: 960px; margin: 0 auto; padding: 20px; }
-    h1 { text-align: center; color: #4499ff; margin-bottom: 25px; font-size: 30px; }
-    .input-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-    select, input { padding: 14px; border: 2px solid #222b55; border-radius: 8px; background: #151b40; color: #fff; font-size: 18px; }
-    #enlaceZona { background: #151b40; padding: 15px; border-radius: 8px; margin-bottom: 25px; display: none; }
-    .enlace { color: #4499ff; word-break: break-all; font-weight: bold; margin: 10px 0; display: block; font-size: 15px; }
-    button { padding: 8px 15px; background: #2ecc71; border: none; border-radius: 4px; color: #000; font-weight: bold; cursor: pointer; }
-    .copiado { color: #2ecc71; margin-top: 8px; display: none; }
-    .reproductor { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; margin: 20px 0; border: 2px solid #222b55; overflow: hidden; display: none; }
-    iframe { width: 100%; height: 100%; border: none; }
-    .info { margin-top: 20px; line-height: 1.6; color: #c9d2ff; }
+    h1 { text-align: center; color: #4499ff; margin-bottom: 30px; font-size: 32px; }
+    .caja { background: #151b40; padding: 25px; border-radius: 12px; margin-bottom: 25px; border: 2px solid #222b55; }
+    label { display: block; margin-bottom: 10px; font-size: 18px; color: #c9d2ff; }
+    input, textarea { width: 100%; padding: 14px; border: 2px solid #222b55; border-radius: 8px; background: #0a0e27; color: #fff; font-size: 16px; margin-bottom: 15px; }
+    button { width: 100%; padding: 14px; background: #2ecc71; border: none; border-radius: 8px; color: #000; font-weight: bold; font-size: 18px; cursor: pointer; transition: 0.2s; }
+    button:hover { background: #27ae60; }
+    #enlaceZona { margin-top: 25px; padding: 18px; background: #0a0e27; border-radius: 8px; display: none; }
+    .enlace { color: #44ff88; font-weight: bold; font-size: 16px; word-break: break-all; margin: 12px 0; }
+    .copiado { color: #2ecc71; margin-top: 10px; font-weight: bold; display: none; }
+    .reproductor { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; margin-top: 25px; overflow: hidden; display: none; }
+    video { width: 100%; height: 100%; border: none; }
+    .separador { text-align: center; margin: 25px 0; color: #8892cc; font-size: 18px; }
   </style>
 </head>
 <body>
-  <h1>🎬 TELYX - Automático</h1>
+  <h1>🌌 TELIVERSET</h1>
 
-  <div class="input-group">
-    <select id="tipo">
-      <option value="movie">Película</option>
-      <option value="tv" selected>Serie</option>
-    </select>
-    <input type="number" id="id" placeholder="ID TMDb" value="1412">
-    <input type="number" id="temp" placeholder="Temporada" value="1">
-    <input type="number" id="epi" placeholder="Episodio" value="1">
+  <div class="caja">
+    <h3 style="margin-bottom:20px; color:#4499ff;">Opción 1: Subir archivo de video</h3>
+    <label>Selecciona tu película / video:</label>
+    <input type="file" id="archivoVideo" accept="video/*">
+    <button onclick="generarDesdeArchivo()">Generar Enlace</button>
+
+    <div class="separador">O</div>
+
+    <h3 style="margin-bottom:20px; color:#4499ff;">Opción 2: Pegar enlace directo del video</h3>
+    <label>URL del video (MP4, etc.):</label>
+    <input type="url" id="urlVideo" placeholder="https://ejemplo.com/video.mp4">
+    <button onclick="generarDesdeEnlace()">Generar Enlace</button>
   </div>
 
   <div id="enlaceZona">
-    <p>🔗 Enlace listo:</p>
-    <a id="enlace" class="enlace" target="_blank"></a>
-    <button onclick="copiarEnlace()">Copiar enlace</button>
-    <p id="mensajeCopiado" class="copiado">✅ Copiado</p>
+    <p>✅ Enlace listo para compartir:</p>
+    <div class="enlace" id="enlaceFinal"></div>
+    <button onclick="copiarEnlace()" style="width:auto; margin-top:10px;">📋 Copiar Enlace</button>
+    <p class="copiado" id="mensajeCopiado">¡Copiado al portapapeles!</p>
   </div>
 
-  <div class="reproductor" id="reproductorZona">
-    <iframe id="videoFrame" allowfullscreen allow="encrypted-media; autoplay"></iframe>
+  <div class="reproductor" id="repro">
+    <video id="videoRepro" controls controlsList="nodownload" allowfullscreen></video>
   </div>
-
-  <div class="info" id="infoPelicula"></div>
 
 <script>
-const DOMINIO = "https://telyx.vercel.app";
-const API_KEY = "6196750b1fd09dd276a6106e75ee34f6";
+const DOMINIO = "https://teliverset.vercel.app"; // Tu dominio
 
-window.addEventListener("load", actualizarTodo);
-document.getElementById("tipo").addEventListener("change", actualizarTodo);
-document.getElementById("id").addEventListener("input", actualizarTodo);
-document.getElementById("temp").addEventListener("input", actualizarTodo);
-document.getElementById("epi").addEventListener("input", actualizarTodo);
+// Generar desde archivo subido
+function generarDesdeArchivo() {
+  const archivo = document.getElementById("archivoVideo").files[0];
+  if (!archivo) { alert("Selecciona un archivo primero"); return; }
 
-function actualizarTodo() {
-  const tipo = document.getElementById("tipo").value;
-  const id = document.getElementById("id").value.trim();
-  const temp = document.getElementById("temp").value || "1";
-  const epi = document.getElementById("epi").value || "1";
+  // Crear enlace temporal del archivo
+  const urlTemporal = URL.createObjectURL(archivo);
+  // Generar código único para el enlace público
+  const idUnico = Math.random().toString(36).substring(2, 10);
 
-  if (!id || isNaN(id) || id.length < 4) {
-    ocultarTodo();
-    return;
-  }
+  mostrarResultado(idUnico, urlTemporal);
+}
 
-  let urlEnlace, fuenteVideo;
-  if (tipo === "movie") {
-    urlEnlace = `${DOMINIO}/play/movie/${id}`;
-    // ✅ MISMA FUENTE ORIGINAL DE ONLYPLAY / UNLIMPLAY
-    fuenteVideo = `https://multiembed.mov/?video_id=${id}&tmdb=1&lang=es&sub=es`;
-  } else {
-    urlEnlace = `${DOMINIO}/play/tv/${id}/${temp}/${epi}`;
-    fuenteVideo = `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${temp}&e=${epi}&lang=es&sub=es`;
-  }
+// Generar desde enlace directo
+function generarDesdeEnlace() {
+  const url = document.getElementById("urlVideo").value.trim();
+  if (!url) { alert("Escribe o pega el enlace del video"); return; }
 
-  document.getElementById("enlace").textContent = urlEnlace;
-  document.getElementById("enlace").href = urlEnlace;
+  const idUnico = Math.random().toString(36).substring(2, 10);
+  mostrarResultado(idUnico, url);
+}
+
+// Mostrar enlace y reproductor
+function mostrarResultado(id, urlVideo) {
+  const enlacePublico = `${DOMINIO}/ver/${id}`;
+
+  document.getElementById("enlaceFinal").textContent = enlacePublico;
   document.getElementById("enlaceZona").style.display = "block";
 
-  document.getElementById("videoFrame").src = fuenteVideo;
-  document.getElementById("reproductorZona").style.display = "block";
-
-  cargarDatosTMDB(tipo, id);
+  // Cargar en reproductor
+  const video = document.getElementById("videoRepro");
+  video.src = urlVideo;
+  document.getElementById("repro").style.display = "block";
 }
 
-function ocultarTodo() {
-  document.getElementById("enlaceZona").style.display = "none";
-  document.getElementById("reproductorZona").style.display = "none";
-  document.getElementById("infoPelicula").innerHTML = "";
-}
-
+// Copiar enlace
 function copiarEnlace() {
-  navigator.clipboard.writeText(document.getElementById("enlace").textContent);
+  const texto = document.getElementById("enlaceFinal").textContent;
+  navigator.clipboard.writeText(texto);
   const msg = document.getElementById("mensajeCopiado");
   msg.style.display = "block";
-  setTimeout(() => msg.style.display = "none", 2000);
-}
-
-async function cargarDatosTMDB(tipo, id) {
-  try {
-    const endpoint = tipo === "movie" ? `movie/${id}` : `tv/${id}`;
-    const res = await fetch(`https://api.themoviedb.org/3/${endpoint}?api_key=${API_KEY}&language=es-ES`);
-    const datos = await res.json();
-    document.getElementById("infoPelicula").innerHTML = `
-      <h3 style="color:#e0e8ff; margin:15px 0 8px;">${datos.title || datos.name}</h3>
-      <p style="color:#c9d2ff; line-height:1.6;">${datos.overview || "Sin sinopsis disponible."}</p>
-    `;
-  } catch {}
+  setTimeout(() => msg.style.display = "none", 2500);
 }
 </script>
 </body>
