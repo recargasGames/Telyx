@@ -5,38 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TELIVERSET - Reproduciendo</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
-        body { background: #0a0e27; color: #ffffff; max-width: 960px; margin: 0 auto; padding: 20px; text-align: center; }
-        h1 { color: #4499ff; margin-bottom: 30px; font-size: 28px; }
-        .reproductor { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; overflow: hidden; margin: 0 auto; border: 2px solid #222b55; }
-        iframe { width: 100%; height: 100%; border: none; }
-        video { width: 100%; height: 100%; border: none; }
-        .aviso { margin-top: 20px; color: #c9d2ff; font-size: 16px; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { background:#0a0e27; color:#fff; max-width:960px; margin:0 auto; padding:20px; text-align:center; }
+        h1 { color:#4499ff; margin-bottom:20px; }
+        .repro { width:100%; aspect-ratio:16/9; background:#000; border-radius:10px; overflow:hidden; }
+        iframe, video { width:100%; height:100%; border:none; }
     </style>
 </head>
 <body>
     <h1>🌌 TELIVERSET</h1>
-    <div class="reproductor" id="contenedorVideo"></div>
-    <p class="aviso">Reproducción desde TELIVERSET</p>
+    <div class="repro" id="caja"></div>
 
 <script>
-const codigo = window.location.pathname.split("/")[2];
+const cod = window.location.pathname.split("/")[2];
 const base = JSON.parse(localStorage.getItem("teliverset_videos") || "{}");
 
-if (codigo && base[codigo]) {
-    const url = base[codigo];
-    const contenedor = document.getElementById("contenedorVideo");
-
-    // Si es MP4 directo
-    if (url.match(/\.(mp4|mkv|avi|mov|webm)(\?.*)?$/i)) {
-        contenedor.innerHTML = `<video src="${url}" controls controlsList="nodownload" allowfullscreen></video>`;
+if (cod && base[cod]) {
+    const url = base[cod].url;
+    if (url.match(/\.(mp4|mkv|webm)/i)) {
+        document.getElementById("caja").innerHTML = `<video src="${url}" controls controlsList="nodownload" allowfullscreen></video>`;
     } else {
-        // Si es iframe (Drive, Seekee, etc.)
-        contenedor.innerHTML = `<iframe src="${url}" allowfullscreen allow="autoplay; encrypted-media" frameborder="0"></iframe>`;
+        document.getElementById("caja").innerHTML = `<iframe src="${url}" allowfullscreen allow="encrypted-media" sandbox="allow-same-origin allow-scripts allow-forms"></iframe>`;
     }
 } else {
-    document.querySelector("h1").textContent = "Enlace no válido o caducado";
-    document.getElementById("contenedorVideo").style.display = "none";
+    document.querySelector("h1").textContent = "Enlace no encontrado";
 }
 </script>
 </body>
