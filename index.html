@@ -3,101 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TELIVERSET - Generador Universal</title>
+    <title>TELIVERSET - Extraer & Generar</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
-        body { background: #0a0e27; color: #ffffff; max-width: 960px; margin: 0 auto; padding: 20px; }
-        h1 { text-align: center; color: #4499ff; margin-bottom: 30px; font-size: 32px; }
-        .caja { background: #151b40; padding: 25px; border-radius: 12px; border: 2px solid #222b55; margin-bottom: 25px; }
-        label { display: block; margin-bottom: 12px; font-size: 18px; color: #c9d2ff; }
-        input { width: 100%; padding: 14px; border: 2px solid #222b55; border-radius: 8px; background: #0a0e27; color: #fff; font-size: 16px; margin-bottom: 20px; }
-        button { width: 100%; padding: 14px; background: #2ecc71; border: none; border-radius: 8px; color: #000; font-weight: bold; font-size: 18px; cursor: pointer; }
-        button:hover { background: #27ae60; }
-        #resultado { margin-top: 25px; padding: 20px; background: #151b40; border-radius: 10px; border: 2px solid #222b55; display: none; }
-        .enlace { color: #44ff88; font-weight: bold; font-size: 16px; word-break: break-all; margin: 15px 0; padding: 12px; background: #0a0e27; border-radius: 6px; }
-        .copiado { color: #2ecc71; margin-top: 12px; font-weight: bold; text-align: center; display: none; }
-        .reproductor { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 10px; margin-top: 25px; overflow: hidden; display: none; }
-        iframe { width: 100%; height: 100%; border: none; }
+        * { margin:0; padding:0; box-sizing:border-box; font-family:Arial,sans-serif; }
+        body { background:#0a0e27; color:#fff; max-width:960px; margin:0 auto; padding:20px; }
+        h1 { text-align:center; color:#4499ff; margin-bottom:25px; }
+        .caja { background:#151b40; padding:20px; border-radius:10px; border:2px solid #222b55; margin-bottom:20px; }
+        input { width:100%; padding:12px; background:#0a0e27; border:2px solid #222b55; border-radius:6px; color:#fff; margin:10px 0; }
+        button { padding:10px 15px; background:#2ecc71; border:none; border-radius:6px; color:#000; font-weight:bold; cursor:pointer; }
+        #resultado, #historial { margin-top:20px; background:#151b40; padding:15px; border-radius:8px; display:none; }
+        .enlace { color:#44ff88; word-break:break-all; margin:10px 0; padding:8px; background:#0a0e27; border-radius:4px; }
+        .item-historial { padding:10px; border-bottom:1px solid #222b55; margin:5px 0; }
+        iframe { width:100%; aspect-ratio:16/9; border:none; border-radius:8px; margin-top:15px; }
     </style>
 </head>
 <body>
-    <h1>🌌 TELIVERSET</h1>
+    <h1>🌌 TELIVERSET - Extraer & Generar</h1>
 
     <div class="caja">
-        <label>Pega aquí el enlace de tu video:</label>
-        <input type="url" id="enlaceEntrada" placeholder="https://drive.google.com / https://h5.seekee.ai / .mp4 directo">
-        <button onclick="generarEnlace()">🔄 Convertir y Generar Enlace</button>
+        <h3>Pega el enlace del video:</h3>
+        <input type="url" id="entrada" placeholder="https://drive.google.com / vidsrc / seekee / mp4">
+        <button onclick="procesar()">🔍 Extraer y Generar Enlace</button>
+        <button onclick="verHistorial()">📜 Ver Historial</button>
     </div>
 
     <div id="resultado">
-        <p>✅ Enlace listo para compartir:</p>
+        <p>✅ Enlace listo para publicar:</p>
         <div class="enlace" id="enlaceFinal"></div>
-        <button onclick="copiarEnlace()" style="width: auto; padding: 10px 20px;">📋 Copiar Enlace</button>
-        <p class="copiado" id="mensajeCopiado">¡Copiado correctamente!</p>
+        <button onclick="copiar()">📋 Copiar</button>
+        <iframe id="vista" allowfullscreen allow="autoplay; encrypted-media"></iframe>
     </div>
 
-    <div class="reproductor" id="vistaPrevia">
-        <iframe id="videoPrevio" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+    <div id="historial">
+        <h3>📜 Historial de videos guardados</h3>
+        <div id="listaHistorial"></div>
     </div>
 
 <script>
 const DOMINIO = "https://teliverset.vercel.app";
-let baseVideos = JSON.parse(localStorage.getItem("teliverset_videos")) || {};
+let base = JSON.parse(localStorage.getItem("teliverset_videos")) || {};
 
-// Convierte cualquier enlace a formato reproducible
-function convertirEnlace(url) {
+// 🔧 EXTRACCIÓN LIMPIA SIN ANUNCIOS
+function limpiarEnlace(url) {
     if (!url) return null;
 
-    // Google Drive
+    // Google Drive → formato limpio
     if (url.includes("drive.google.com")) {
         const id = url.match(/[-\w]{25,}/)?.[0];
         return id ? `https://drive.google.com/file/d/${id}/preview` : null;
     }
 
-    // Seekee
+    // Seekee → formato limpio
     if (url.includes("h5.seekee.ai")) {
         const id = url.split("/s/")[1]?.split("?")[0];
         return id ? `https://h5.seekee.ai/drive/embed/${id}` : null;
     }
 
-    // Enlace directo MP4 u otro
-    if (url.match(/\.(mp4|mkv|avi|mov|webm)(\?.*)?$/i)) {
-        return url;
+    // Vidsrc / Multiembed → QUITAMOS ANUNCIOS
+    if (url.includes("vidsrc.me") || url.includes("multiembed.mov")) {
+        // Forzamos modo limpio, sin anuncios
+        return url.replace(/(&ads=\d+|ads=\d+)/g, "").replace(/autoplay=\d+/g, "") + "&ads=0";
     }
+
+    // MP4 directo → tal cual
+    if (url.match(/\.(mp4|mkv|webm)(\?.*)?$/i)) return url;
 
     return url;
 }
 
-function generarEnlace() {
-    const entrada = document.getElementById("enlaceEntrada").value.trim();
-    const enlaceConvertido = convertirEnlace(entrada);
+function procesar() {
+    const entrada = document.getElementById("entrada").value.trim();
+    const limpio = limpiarEnlace(entrada);
+    if (!limpio) return alert("Enlace no válido");
 
-    if (!enlaceConvertido) {
-        alert("Enlace no válido o no reconocido");
-        return;
-    }
+    // Generar código único permanente
+    const codigo = Math.random().toString(36).slice(2, 10);
+    base[codigo] = { url: limpio, fecha: new Date().toLocaleString(), original: entrada };
+    localStorage.setItem("teliverset_videos", JSON.stringify(base));
 
-    // Generar código único
-    const codigoUnico = Math.random().toString(36).substring(2, 10);
-    baseVideos[codigoUnico] = enlaceConvertido;
-    localStorage.setItem("teliverset_videos", JSON.stringify(baseVideos));
-
-    // Mostrar resultado
-    const enlaceFinal = `${DOMINIO}/ver/${codigoUnico}`;
+    const enlaceFinal = `${DOMINIO}/ver/${codigo}`;
     document.getElementById("enlaceFinal").textContent = enlaceFinal;
+    document.getElementById("vista").src = limpio;
     document.getElementById("resultado").style.display = "block";
-
-    // Vista previa
-    document.getElementById("videoPrevio").src = enlaceConvertido;
-    document.getElementById("vistaPrevia").style.display = "block";
 }
 
-function copiarEnlace() {
-    const texto = document.getElementById("enlaceFinal").textContent;
-    navigator.clipboard.writeText(texto);
-    const aviso = document.getElementById("mensajeCopiado");
-    aviso.style.display = "block";
-    setTimeout(() => aviso.style.display = "none", 2500);
+function copiar() {
+    navigator.clipboard.writeText(document.getElementById("enlaceFinal").textContent);
+    alert("✅ Copiado");
+}
+
+function verHistorial() {
+    const cont = document.getElementById("listaHistorial");
+    cont.innerHTML = "";
+    if (Object.keys(base).length === 0) return cont.innerHTML = "<p>Sin historial</p>";
+
+    for (const [cod, dato] of Object.entries(base)) {
+        const enlace = `${DOMINIO}/ver/${cod}`;
+        cont.innerHTML += `
+        <div class="item-historial">
+            <p><strong>${dato.fecha}</strong></p>
+            <p>🔗 <a href="${enlace}" target="_blank" style="color:#44ff88;">${enlace}</a></p>
+            <button onclick="borrar('${cod}')">🗑️ Borrar</button>
+        </div>`;
+    }
+    document.getElementById("historial").style.display = "block";
+}
+
+function borrar(cod) {
+    delete base[cod];
+    localStorage.setItem("teliverset_videos", JSON.stringify(base));
+    verHistorial();
 }
 </script>
 </body>
